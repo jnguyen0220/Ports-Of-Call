@@ -1,0 +1,46 @@
+{
+  "destination": [
+    {
+      "schedule_interval": "*/5 * * * * *",
+      "url": "google.com",
+      "port": "80",
+      "id": 1594099771960
+    },
+    {
+      "schedule_interval": "*/5 * * * * *",
+      "url": "google.com",
+      "port": "443",
+      "id": 1594136624527
+    },
+    {
+      "schedule_interval": "*/5 * * * * *",
+      "url": "amazon.com",
+      "port": "80",
+      "id": 1594168217109,
+      "lastPingDate": "7:30:35 PM",
+      "status": true
+    },
+    {
+      "schedule_interval": "*/5 * * * * *",
+      "url": "ag-grid.com",
+      "port": "80",
+      "id": 1594180554533,
+      "lastPingDate": "11:02:20 PM",
+      "status": true
+    },
+    {
+      "schedule_interval": "*/5 * * * * *",
+      "url": "ag-grid.com",
+      "port": "443",
+      "id": 1594180589084,
+      "lastPingDate": "11:02:20 PM",
+      "status": true
+    },
+    {
+      "schedule_interval": "*/5 * * * * *",
+      "url": "amazon.com",
+      "port": "443",
+      "id": 1594180941258
+    }
+  ]
+}

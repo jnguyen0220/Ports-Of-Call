@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ports of Call</title>
+    <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="./main.js"></script>
+    <link rel="stylesheet" type="text/css" href="./styles.css">
+</head>
+
+<body>
+    <div class="grid-container">
+        <div class="header">
+            <div class="center">
+                <div>
+                    <a id="btnAdd" title="New Destination" class="save-button save-button-enabled">New Destination</a>
+                </div>
+            </div>
+            <div class="center text-right">
+                <span>🛳️ Ports Of Call</span>
+            </div>
+        </div>
+        <div class="main">
+            <div id="myGrid" style="height: 100%; width:100%; padding: 0.5em" class="ag-theme-alpine"></div>
+        </div>
+        <div class="footer center">
+            <div>Copyright ©
+                <span id="currentYear"></span> by <a href="mailto:jonny_nguyen@outlook.com">Jonny Nguyen</a></div>
+        </div>
+    </div>
+    <div id="mdlAdd" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="center">
+                    <span>New Destination</span>
+                </div>
+                <div class="close center">
+                    <span id="btnClose" class="close">&times;</span>
+                </div>
+            </div>
+            <div class="modal-body">
+                <form id="frmAdd">
+                    <div>
+                        <div>
+                            <label>Schedule Interval <span style="color:red">*</span></label>
+                        </div>
+                        <div>
+                            <select style="padding: 5px 0;" id="sltInterval">
+                                <option value="*/5 * * * * *">5 Seconds</option>
+                                <option value="*/10 * * * * *">10 Seconds</option>
+                                <option value="*/20 * * * * *">20 Seconds</option>
+                                <option value="*/40 * * * * *">40 Seconds</option>
+                                <option value="* * * * *">60 Seconds</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <input type="checkbox" id="chkCustom" /> Custom
+                        </div>
+                        <div>
+                            <input type="text" required name="schedule_interval" disabled autocomplete="off">
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <label>Url <span style="color:red">*</span></label>
+                        </div>
+                        <div>
+                            <input type="text" required name="url" autocomplete="off">
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <label>Port <span style="color:red">*</span></label>
+                        </div>
+                        <div>
+                            <input type="number" required name="port" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="save-button-container">
+                        <a id="btnSave" type="submit" title="Save" class="save-button save-button-disabled">Save</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
