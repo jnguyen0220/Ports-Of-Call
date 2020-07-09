@@ -18,6 +18,11 @@
                     <a id="btnAdd" title="New Destination" class="save-button save-button-enabled">New Destination</a>
                 </div>
             </div>
+            <div class="center monitor">
+                <div>
+                    Monitor since: <span id="monitorDate"></span>
+                </div>
+            </div>
             <div class="center text-right">
                 <span>🛳️ Ports Of Call</span>
             </div>
@@ -34,19 +39,22 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="center">
-                    <span>New Destination</span>
+                    <div>
+                        <span id="mdlTitle"></span> Destination
+                    </div>
                 </div>
                 <div class="close center">
-                    <span id="btnClose" class="close">&times;</span>
+                    <span id="btnClose">&times;</span>
                 </div>
             </div>
             <div class="modal-body">
                 <form id="frmAdd">
                     <div>
                         <div>
-                            <label>Schedule Interval <span style="color:red">*</span></label>
+                            <label>Schedule Interval <span class="requied">*</span></label>
                         </div>
                         <div>
+                            <input type="hidden" name="id" />
                             <select style="padding: 5px 0;" id="sltInterval">
                                 <option value="*/5 * * * * *">5 Seconds</option>
                                 <option value="*/10 * * * * *">10 Seconds</option>
@@ -61,12 +69,12 @@
                             <input type="checkbox" id="chkCustom" /> Custom
                         </div>
                         <div>
-                            <input type="text" required name="schedule_interval" disabled autocomplete="off">
+                            <input type="text" required name="schedule_interval" disabled="chkCustom.checked" autocomplete="off">
                         </div>
                     </div>
                     <div>
                         <div>
-                            <label>Url <span style="color:red">*</span></label>
+                            <label>Url <span class="requied">*</span></label>
                         </div>
                         <div>
                             <input type="text" required name="url" autocomplete="off">
@@ -74,7 +82,7 @@
                     </div>
                     <div>
                         <div>
-                            <label>Port <span style="color:red">*</span></label>
+                            <label>Port <span class="requied">*</span></label>
                         </div>
                         <div>
                             <input type="number" required name="port" autocomplete="off">

@@ -1,33 +1,99 @@
 const socket = io();
 
+const serverStartDate = new Date();
+
 const availableIndicator = (params) => {
-    return `<span>${params.value ? "&#128994;" : "&#128308;"}</span>`;
+    const config = {
+        0: 'red',
+        1: 'green',
+        2: 'grey'
+    };
+    return `
+        <svg class="center" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+            <circle cx="50%" cy="50%" r="8" fill="${config[params.value] || 'grey'}" />
+        </svg>
+    `;
 }
 
-const removeJob = (data) => {
-    socket.emit('remove', data.id);
+const toggleJob = (data) => {
+    socket.emit('toggle', data.id);
+}
+
+const loadFormData = (data, title, saveButtonTitle) => {
+    const isRemove = title === 'Remove',
+        modal = domElement.get('MODAL'),
+        save = domElement.get('SAVE'),
+        select = domElement.get('SELECT'),
+        custom = domElement.get('CUSTOM'),
+        modalTitle = domElement.get('MODAL_TITLE'),
+        formItem = domElement.get('FORM_ITEMS'),
+        formData = Object.keys(data).map(x => ({
+            field: x,
+            value: data[x]
+        })),
+        element = getFormItem('schedule_interval');
+
+    element.disabled = true;
+    custom.disabled = isRemove;
+    save.innerHTML = saveButtonTitle;
+    save.style = `background: ${ isRemove ? 'rgb(223, 117, 20)' : 'rgb(66, 184, 221)'};`;
+    modalTitle.innerHTML = title;
+    select.value = data.schedule_interval;
+    select.disabled = isRemove;
+    Array.from(formItem).forEach(x => {
+        x.disabled = isRemove
+    });
+    element.disabled = true;
+    setFormData(formData);
+    enableSaveButton(save, true);
+    modal.style.display = 'flex';
+}
+
+const editJob = (item) => {
+    const { data } = gridOptions.api.getRowNode(item.id);
+    loadFormData(data, 'Edit', 'Save');
+}
+
+const removeJob = (item) => {
+    const { data } = gridOptions.api.getRowNode(item.id);
+    loadFormData(data, "Remove", 'Remove');
 }
 
 const btnRemoveRenderer = (value) => {
-    const { url, port } = value.data;
-    const button = document.createElement('button');
-    button.innerHTML = '🗑️';
-    button.title = `Remove ${url}:${port}`;
-    button.style = "padding: .3em .5em";
-    button.onclick = () => {
-        if (confirm(`Are you sure you want to remove ${url}:${port}`)) {
-            removeJob(value.data);
-        }
-    }
-    return button;
+    const { data } = value,
+    config = new Map([
+            ['Edit', editJob],
+            ['Remove', removeJob],
+            ['Toggle', toggleJob]
+        ]),
+        select = document.createElement('select'),
+        empty = document.createElement("option");
+
+    empty.value = "";
+    select.appendChild(empty);
+
+    Array.from(config.keys()).forEach(x => {
+        const option = document.createElement("option");
+        option.value = x;
+        option.innerHTML = x;
+        select.appendChild(option);
+    });
+
+    select.onchange = () => {
+        config.get(select.value)(data);
+        select.value = "";
+        select.blur();
+    };
+    return select;
 }
 
 const columnDefs = [{
         headerName: "Action",
-        cellRenderer: btnRemoveRenderer,
+        cellRenderer: btnRemoveRenderer
     },
+    { headerName: "Available", field: "status", cellRenderer: availableIndicator, sortable: true, suppressMenu: true, cellClass: ['center'] },
     { headerName: "Last Ping Time", field: "lastPingDate", cellRenderer: 'agAnimateShowChangeCellRenderer' },
-    { headerName: "Available", field: "status", cellRenderer: availableIndicator, sortable: true, suppressMenu: true },
+    { headerName: "Last Status Change", field: "lastStatusChange", cellRenderer: 'agAnimateShowChangeCellRenderer' },
     {
         headerName: "Url",
         field: "url",
@@ -37,7 +103,7 @@ const columnDefs = [{
         },
     },
     { headerName: "Port", field: "port" },
-    { headerName: "Schedule_Interval", field: "schedule_interval" }
+    { headerName: "Schedule_Interval", field: "schedule_interval", cellRenderer: 'agAnimateShowChangeCellRenderer' }
 ];
 
 const gridOptions = {
@@ -56,9 +122,11 @@ const domControlInit = () => {
     domElement.set('CLOSE', document.getElementById("btnClose"));
     domElement.set('SAVE', document.getElementById('btnSave'));
     domElement.set('SELECT', document.getElementById('sltInterval'));
+    domElement.set('MONITOR', document.getElementById('monitorDate'));
     domElement.set('CUSTOM', document.getElementById('chkCustom'));
     domElement.set('FORM_ITEMS', document.getElementById('frmAdd').querySelectorAll('[name]'));
     domElement.set('GRID', document.getElementById('myGrid'));
+    domElement.set('MODAL_TITLE', document.getElementById('mdlTitle'));
     domElement.set('CURRENT_YEAR', document.getElementById('currentYear'));
 };
 
@@ -73,11 +141,12 @@ const domControlEventInit = () => {
         add = domElement.get('ADD'),
         close = domElement.get('CLOSE'),
         save = domElement.get('SAVE'),
+        monitor = domElement.get('MONITOR'),
         year = domElement.get('CURRENT_YEAR'),
         formItems = domElement.get('FORM_ITEMS');
 
-    const now = new Date();
-    year.innerHTML = now.getFullYear();
+    year.innerHTML = serverStartDate.getFullYear();
+    monitor.innerHTML = serverStartDate.toLocaleString();
 
     select.onchange = () => {
         const value = select.options[select.selectedIndex].value,
@@ -93,18 +162,18 @@ const domControlEventInit = () => {
 
     save.onclick = () => {
         const result = getFormData(formItems);
-        socket.emit('new', result);
+        save.innerHTML === 'Remove' ? socket.emit('remove', Number(result.id)) : socket.emit('new', result);
         close.click();
     }
 
     add.onclick = () => {
         formReset(save, formItems);
-        formDefault();
-        custom.checked = false;
-        const element = getFormItem('schedule_interval');
-        element.disabled = true;
+        loadFormData({
+            port: 80,
+            schedule_interval: '*/5 * * * * *'
+        }, 'New', 'Save');
         select.selectedIndex = 0;
-        modal.style.display = 'flex';
+        enableSaveButton(save, false);
     }
 
     close.onclick = () => modal.style.display = "none";
@@ -117,13 +186,10 @@ document.addEventListener('DOMContentLoaded', () => {
     new agGrid.Grid(domElement.get('GRID'), gridOptions);
 });
 
-const formDefault = () => {
-    [
-        { field: 'port', value: 80 },
-        { field: 'schedule_interval', value: '*/5 * * * * *' }
-    ].forEach(x => {
+const setFormData = (data) => {
+    data.forEach(x => {
         const element = getFormItem(x.field);
-        element.value = x.value
+        element && (element.value = x.value);
     });
 }
 
@@ -139,11 +205,7 @@ const formOnChange = (save, formItems) => {
 }
 
 const formValid = (formItems) => {
-    let result = true;
-    formItems.forEach(x => {
-        result = x.required && !!x.value && result;
-    })
-    return result;
+    return Array.from(formItems).filter(x => x.required).every(x => x.value)
 }
 
 const formReset = (save, formItems) => {
@@ -160,15 +222,14 @@ const getFormData = (items) => {
 }
 
 const topicUpdate = (msg) => {
-    const { id, lastPingDate, status } = msg;
-    const rowNode = gridOptions.api.getRowNode(id);
+    const rowNode = gridOptions.api.getRowNode(msg.id);
     if (rowNode) {
-        updateItem = {...rowNode.data, lastPingDate, status };
-        gridOptions.api.applyTransactionAsync({ update: [updateItem] });
         const sort = [
-            { colId: 'status', sort: 'asc' },
+            { colId: 'status', sort: 'desc' },
         ]
-        gridOptions.api.setSortModel(sort);
+        updateItem = {...rowNode.data, ...msg };
+        gridOptions.api.applyTransactionAsync({ update: [updateItem] });
+        msg.status === 0 && gridOptions.api.setSortModel(sort);
     }
 }
 

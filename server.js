@@ -1,4 +1,5 @@
 const express = require('express'),
+    _ = require('lodash'),
     app = express(),
     http = require('http').createServer(app),
     io = require('socket.io')(http),
@@ -11,29 +12,57 @@ const express = require('express'),
 
 db.defaults({ destination: [] }).write();
 
-let schedule = db.get('destination').value().map(x => ({...x }));
+let schedule = _.cloneDeep(db.get('destination').value());
+
+const stopList = new Set();
 
 const task = async(x) => {
-    let result = true;
+    let result = 1;
     try {
         await util.ping(x.url, x.port);
     } catch (e) {
         console.log(e);
-        result = false;
+        result = 0
     } finally {
         const now = new Date(),
             lastPingDate = now.toLocaleTimeString(),
-            found = schedule.find(y => y.id === x.id);
+            found = _.cloneDeep(schedule.find(y => y.id === x.id));
 
         if (found) {
-            found['lastPingDate'] = lastPingDate
+            found['lastPingDate'] = lastPingDate;
+            found['status'] !== result && (found['lastStatusChange'] = lastPingDate);
             found['status'] = result;
         }
-        io.emit('update', { id: x.id, lastPingDate, status: result });
+        io.emit('update', found);
     }
 }
 
-const scheduleManager = new ScheduleManager(task);
+const stopComplete = (data) => {
+    const { status, item, id } = scheduleManager.stopStatus.get(data.id);
+    switch (status) {
+        case "stop":
+            const found = schedule.find(x => x.id === id);
+            found.status = 2;
+            io.emit('update', found);
+            break;
+        case "remove":
+            db.get('destination').remove({ id }).write();
+            schedule = schedule.filter(x => x.id !== id);
+            scheduleManager.jobs.delete(id);
+            io.emit('remove', id);
+            break;
+        case "update":
+            db.get('destination').find({ id }).assign(item).write();
+            schedule = schedule.filter(x => x.id !== id).concat(item);
+            scheduleManager.jobs.delete(id);
+            const success = scheduleManager.add(item);
+            success && io.emit('update', {...item, status: 2 });
+            break;
+    }
+    scheduleManager.stopStatus.delete(id);
+}
+
+const scheduleManager = new ScheduleManager(task, stopComplete);
 scheduleManager.load(schedule);
 
 app.use(express.static('./client'));
@@ -42,28 +71,37 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-const addDestination = (msg) => {
-    const result = {...msg, id: Date.now() },
-        success = scheduleManager.add(result);
+const addDestination = (item) => {
+    const success = scheduleManager.add(item);
     if (success) {
-        db.get('destination').push(result).write();
-        schedule = schedule.concat(result);
-        io.emit('new', result);
+        db.get('destination').push(item).write();
+        schedule = schedule.concat(item);
+        io.emit('new', item);
     }
 }
 
-const removeDestination = (id) => {
-    db.get('destination').remove({ id }).write();
-    schedule = schedule.filter(x => x.id !== id);
-    scheduleManager.remove(id);
-    io.emit('remove', id);
+const ModifyDestination = ({ id, ...rest }) => {
+    const _id = id ? Number(id) : Date.now(),
+        result = {...rest, id: _id };
+    id ? scheduleManager.update(result) : addDestination(result);
+}
+
+const toggleTimer = (id) => {
+    if (stopList.has(id)) {
+        scheduleManager.start(id);
+        stopList.delete(id);
+    } else {
+        scheduleManager.stop(id);
+        stopList.add(id);
+    }
 }
 
 io.on('connection', (socket) => {
-    io.emit('init', schedule);
+    io.emit('init', schedule.sort((a, b) => b.status - a.status));
     [
-        { topic: 'new', func: addDestination },
-        { topic: 'remove', func: removeDestination }
+        { topic: 'new', func: ModifyDestination },
+        { topic: 'remove', func: scheduleManager.remove },
+        { topic: 'toggle', func: toggleTimer }
     ].forEach(x => socket.on(x.topic, x.func));
 });
 
