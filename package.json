@@ -1,12 +1,12 @@
 {
-    "name": "port-master",
+    "name": "ports-of-call",
     "version": "1.0.0",
     "description": "",
-    "main": "index.js",
+    "main": "server.js",
     "scripts": {
         "start": "node server.js"
     },
-    "author": "",
+    "author": "Jonny Nguyen",
     "license": "ISC",
     "dependencies": {
         "cron": "^1.8.2",
