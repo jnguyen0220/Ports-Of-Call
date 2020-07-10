@@ -22,6 +22,11 @@
     grid-template-columns: 80% 20%;
 }
 
+.footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
 .footer,
 .header {
     background: #2d3e50;
@@ -139,8 +144,8 @@
     padding: 0.2em 0.4em;
 }
 
-input[type="text"],
-input[type="number"],
+form input[type="text"],
+form input[type="number"],
 select {
     width: 100%;
     display: inline-block;
@@ -164,7 +169,6 @@ form>div {
 }
 
 .save-button {
-    display: inline-block;
     padding: 2px 1em;
     border-radius: 0.2em;
     color: white;
@@ -193,5 +197,14 @@ form>div {
 }
 
 .monitor {
-    text-align: center;
+    text-align: left;
+}
+
+.filter {
+    display: inline-block;
+    padding: 2px .5em;
+    border-radius: 0.2em;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 3px #ddd;
+    box-sizing: border-box;
 }

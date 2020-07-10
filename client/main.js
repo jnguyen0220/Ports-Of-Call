@@ -123,8 +123,13 @@ const gridOptions = {
     getRowNodeId: (data) => {
         return data.id;
     },
-    suppressCellSelection: true
+    suppressCellSelection: true,
+
 };
+
+const onFilterTextBoxChanged = () => {
+    gridOptions.api.setQuickFilter(document.getElementById('txtFilter').value);
+}
 
 const domElement = new Map();
 

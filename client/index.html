@@ -18,10 +18,8 @@
                     <a id="btnAdd" title="New Destination" class="save-button save-button-enabled">New Destination</a>
                 </div>
             </div>
-            <div class="center monitor">
-                <div>
-                    Monitor since: <span id="monitorDate"></span>
-                </div>
+            <div class="center">
+                <input type="text" class="filter" placeholder="Filter..." id="txtFilter" oninput="onFilterTextBoxChanged()" />
             </div>
             <div class="center text-right">
                 <span>🛳️ Ports Of Call</span>
@@ -30,8 +28,11 @@
         <div class="main">
             <div id="myGrid" style="height: 100%; width:100%; padding: 0.5em" class="ag-theme-alpine"></div>
         </div>
-        <div class="footer center">
-            <div>Copyright ©
+        <div class="footer">
+            <div class="monitor">
+                Monitor since: <span id="monitorDate"></span>
+            </div>
+            <div class="text-right">Copyright ©
                 <span id="currentYear"></span> by <a href="mailto:jonny_nguyen@outlook.com">Jonny Nguyen</a></div>
         </div>
     </div>
