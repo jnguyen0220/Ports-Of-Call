@@ -91,13 +91,17 @@ const btnRemoveRenderer = (value) => {
     return select;
 }
 
+const convertToLocalDates = (params) => {
+    return new Date(params.value).toLocaleTimeString();
+}
+
 const columnDefs = [{
         headerName: "Action",
         cellRenderer: btnRemoveRenderer
     },
     { headerName: "Available", field: "status", cellRenderer: availableIndicator, sortable: true, suppressMenu: true, cellClass: ['center'] },
-    { headerName: "Last Ping Time", field: "lastPingDate", cellRenderer: 'agAnimateShowChangeCellRenderer' },
-    { headerName: "Last Status Change", field: "lastStatusChange", cellRenderer: 'agAnimateShowChangeCellRenderer' },
+    { headerName: "Last Ping Time", field: "lastPingDate", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocalDates },
+    { headerName: "Last Status Change", field: "lastStatusChange", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocalDates },
     {
         headerName: "Url",
         field: "url",

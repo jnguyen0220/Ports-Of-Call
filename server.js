@@ -27,8 +27,7 @@ const task = async(x) => {
         console.log(e);
         result = 1
     } finally {
-        const now = new Date(),
-            lastPingDate = now.toLocaleTimeString(),
+        const lastPingDate = new Date(),
             found = schedule.find(y => y.id === x.id);
 
         if (found) {
