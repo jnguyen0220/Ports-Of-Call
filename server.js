@@ -39,6 +39,14 @@ const task = async(x) => {
     }
 }
 
+const cleanSaveObject = (list) => {
+    const prop = ["schedule_interval", "url", "port", "id"];
+    return list.map(x => prop.reduce((a, c) => ({
+        ...a,
+        [c]: x[c]
+    }), {}));
+}
+
 const stopComplete = (data) => {
     const { status, item, id } = scheduleManager.stopStatus.get(data.id);
     switch (status) {
@@ -48,14 +56,14 @@ const stopComplete = (data) => {
             io.emit('update', found);
             break;
         case "remove":
-            db.get('destination').remove({ id }).write();
             schedule = schedule.filter(x => x.id !== id);
+            db.set('destination', cleanSaveObject(schedule)).write();
             scheduleManager.jobs.delete(id);
             io.emit('remove', id);
             break;
         case "update":
-            db.get('destination').find({ id }).assign(item).write();
             schedule = schedule.filter(x => x.id !== id).concat(item);
+            db.set('destination', cleanSaveObject(schedule)).write();
             stopList.delete(id);
             scheduleManager.jobs.delete(id);
             const success = scheduleManager.add(item);
@@ -75,18 +83,14 @@ app.get('/', (req, res) => {
 });
 
 const addDestination = (item) => {
-    const success = scheduleManager.add(item);
-    if (success) {
-        db.get('destination').cloneDeep().push(item).write();
-        schedule = schedule.concat(item);
-        io.emit('new', item);
-    }
-}
+    const result = {...item, id: Date.now() },
+        success = scheduleManager.add(result);
 
-const ModifyDestination = ({ id, ...rest }) => {
-    const _id = id ? Number(id) : Date.now(),
-        result = {...rest, id: _id };
-    id ? scheduleManager.update(result) : addDestination(result);
+    if (success) {
+        schedule = schedule.concat(result);
+        db.set('destination', cleanSaveObject(schedule)).write();
+        io.emit('new', result);
+    }
 }
 
 const toggleTimer = (id) => {
@@ -99,11 +103,20 @@ const toggleTimer = (id) => {
     }
 }
 
+const updateDestination = ({ id, ...rest }) => {
+    scheduleManager.update({...rest, id: Number(id) });
+}
+
+const removeDestination = (id) => {
+    scheduleManager.remove(Number(id));
+}
+
 io.on('connection', (socket) => {
     io.emit('init', { serverStartDate, schedule: schedule.sort((a, b) => b.status - a.status) });
     [
-        { topic: 'new', func: ModifyDestination },
-        { topic: 'remove', func: scheduleManager.remove },
+        { topic: 'update', func: updateDestination },
+        { topic: 'new', func: addDestination },
+        { topic: 'remove', func: removeDestination },
         { topic: 'toggle', func: toggleTimer }
     ].forEach(x => socket.on(x.topic, x.func));
 });

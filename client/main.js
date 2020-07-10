@@ -175,14 +175,14 @@ const domControlEventInit = () => {
         const data = getFormData(formItems);
         switch (save.innerHTML) {
             case "Remove":
-                socket.emit('remove', Number(data.id));
+                socket.emit('remove', data.id);
                 break;
             case "Clone":
                 const { id, ...rest } = data;
                 socket.emit('new', rest);
                 break;
             default:
-                socket.emit('new', data);
+                socket.emit(data.id ? 'update' : 'new', data);
                 break;
 
         }
@@ -248,7 +248,7 @@ const topicUpdate = (msg) => {
     const rowNode = gridOptions.api.getRowNode(msg.id);
     if (rowNode) {
         const sort = [
-            { colId: 'status', sort: 'desc' },
+            { colId: 'status', sort: 'asc' },
         ]
         updateItem = {...rowNode.data, ...msg };
         gridOptions.api.applyTransactionAsync({ update: [updateItem] });
