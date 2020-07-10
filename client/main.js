@@ -4,9 +4,9 @@ const serverStartDate = new Date();
 
 const availableIndicator = (params) => {
     const config = {
-        0: 'red',
-        1: 'green',
-        2: 'grey'
+        1: 'red',
+        2: 'green',
+        3: 'grey'
     };
     return `
         <svg class="center" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
@@ -59,10 +59,16 @@ const removeJob = (item) => {
     loadFormData(data, "Remove", 'Remove');
 }
 
+const cloneJob = (item) => {
+    const { data } = gridOptions.api.getRowNode(item.id);
+    loadFormData(data, "Clone", 'Clone');
+}
+
 const btnRemoveRenderer = (value) => {
     const { data } = value,
     config = new Map([
             ['Edit', editJob],
+            ['Clone', cloneJob],
             ['Remove', removeJob],
             ['Toggle', toggleJob]
         ]),
@@ -161,8 +167,20 @@ const domControlEventInit = () => {
     }
 
     save.onclick = () => {
-        const result = getFormData(formItems);
-        save.innerHTML === 'Remove' ? socket.emit('remove', Number(result.id)) : socket.emit('new', result);
+        const data = getFormData(formItems);
+        switch (save.innerHTML) {
+            case "Remove":
+                socket.emit('remove', Number(data.id));
+                break;
+            case "Clone":
+                const { id, ...rest } = data;
+                socket.emit('new', rest);
+                break;
+            default:
+                socket.emit('new', data);
+                break;
+
+        }
         close.click();
     }
 
@@ -229,7 +247,7 @@ const topicUpdate = (msg) => {
         ]
         updateItem = {...rowNode.data, ...msg };
         gridOptions.api.applyTransactionAsync({ update: [updateItem] });
-        msg.status === 0 && gridOptions.api.setSortModel(sort);
+        msg.status === 1 && gridOptions.api.setSortModel(sort);
     }
 }
 

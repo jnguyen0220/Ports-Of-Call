@@ -12,21 +12,21 @@ const express = require('express'),
 
 db.defaults({ destination: [] }).write();
 
-let schedule = _.cloneDeep(db.get('destination').value());
+let schedule = db.get('destination').cloneDeep().value();
 
 const stopList = new Set();
 
 const task = async(x) => {
-    let result = 1;
+    let result = 2;
     try {
         await util.ping(x.url, x.port);
     } catch (e) {
         console.log(e);
-        result = 0
+        result = 1
     } finally {
         const now = new Date(),
             lastPingDate = now.toLocaleTimeString(),
-            found = _.cloneDeep(schedule.find(y => y.id === x.id));
+            found = schedule.find(y => y.id === x.id);
 
         if (found) {
             found['lastPingDate'] = lastPingDate;
@@ -42,7 +42,7 @@ const stopComplete = (data) => {
     switch (status) {
         case "stop":
             const found = schedule.find(x => x.id === id);
-            found.status = 2;
+            found.status = 3;
             io.emit('update', found);
             break;
         case "remove":
@@ -54,9 +54,10 @@ const stopComplete = (data) => {
         case "update":
             db.get('destination').find({ id }).assign(item).write();
             schedule = schedule.filter(x => x.id !== id).concat(item);
+            stopList.delete(id);
             scheduleManager.jobs.delete(id);
             const success = scheduleManager.add(item);
-            success && io.emit('update', {...item, status: 2 });
+            success && io.emit('update', {...item, status: 3 });
             break;
     }
     scheduleManager.stopStatus.delete(id);
@@ -74,7 +75,7 @@ app.get('/', (req, res) => {
 const addDestination = (item) => {
     const success = scheduleManager.add(item);
     if (success) {
-        db.get('destination').push(item).write();
+        db.get('destination').cloneDeep().push(item).write();
         schedule = schedule.concat(item);
         io.emit('new', item);
     }
