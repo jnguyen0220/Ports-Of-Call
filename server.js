@@ -112,7 +112,7 @@ const removeDestination = (id) => {
 }
 
 io.on('connection', (socket) => {
-    io.emit('init', { serverStartDate, schedule: schedule.sort((a, b) => b.status - a.status) });
+    socket.emit('init', { serverStartDate, schedule: schedule.sort((a, b) => b.status - a.status) });
     [
         { topic: 'update', func: updateDestination },
         { topic: 'new', func: addDestination },
