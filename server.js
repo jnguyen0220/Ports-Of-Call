@@ -8,9 +8,12 @@ const express = require('express'),
     low = require('lowdb'),
     FileSync = require('lowdb/adapters/FileSync'),
     adapter = new FileSync('./lib/db.json'),
-    db = low(adapter);
+    db = low(adapter),
+    serverStartDate = new Date();
 
 db.defaults({ destination: [] }).write();
+
+
 
 let schedule = db.get('destination').cloneDeep().value();
 
@@ -98,7 +101,7 @@ const toggleTimer = (id) => {
 }
 
 io.on('connection', (socket) => {
-    io.emit('init', schedule.sort((a, b) => b.status - a.status));
+    io.emit('init', { serverStartDate, schedule: schedule.sort((a, b) => b.status - a.status) });
     [
         { topic: 'new', func: ModifyDestination },
         { topic: 'remove', func: scheduleManager.remove },

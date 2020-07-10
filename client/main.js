@@ -1,7 +1,5 @@
 const socket = io();
 
-const serverStartDate = new Date();
-
 const availableIndicator = (params) => {
     const config = {
         1: 'red',
@@ -140,6 +138,14 @@ const getFormItem = (name) => {
     return Array.from(domElement.get('FORM_ITEMS')).find(x => x.name === name);
 }
 
+const setClientDates = (serverStartDate) => {
+    const monitor = domElement.get('MONITOR'),
+        year = domElement.get('CURRENT_YEAR');
+
+    year.innerHTML = serverStartDate.getFullYear();
+    monitor.innerHTML = serverStartDate.toLocaleString();
+}
+
 const domControlEventInit = () => {
     const select = domElement.get('SELECT'),
         custom = domElement.get('CUSTOM'),
@@ -147,12 +153,7 @@ const domControlEventInit = () => {
         add = domElement.get('ADD'),
         close = domElement.get('CLOSE'),
         save = domElement.get('SAVE'),
-        monitor = domElement.get('MONITOR'),
-        year = domElement.get('CURRENT_YEAR'),
         formItems = domElement.get('FORM_ITEMS');
-
-    year.innerHTML = serverStartDate.getFullYear();
-    monitor.innerHTML = serverStartDate.toLocaleString();
 
     select.onchange = () => {
         const value = select.options[select.selectedIndex].value,
@@ -260,8 +261,9 @@ const topicRemove = (msg) => {
     gridOptions.api.applyTransaction({ remove: [rowNode.data] });
 }
 
-const topicInit = (msg) => {
-    gridOptions.api.setRowData(msg);
+const topicInit = ({ serverStartDate, schedule }) => {
+    setClientDates(new Date(serverStartDate));
+    gridOptions.api.setRowData(schedule);
     gridOptions.api.sizeColumnsToFit();
 }
 
