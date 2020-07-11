@@ -1,10 +1,14 @@
 {
     "name": "ports-of-call",
     "version": "1.0.0",
-    "description": "",
+    "description": "A real time heartbeat web application that uses cron syntax for scheduling.",
     "main": "server.js",
     "scripts": {
         "start": "node server.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/jnguyen0220/Ports-Of-Call"
     },
     "author": "Jonny Nguyen",
     "license": "ISC",

@@ -1,1 +1,28 @@
 # Ports Of Call
+A real time heartbeat web application that uses cron syntax for scheduling.
+
+## Prerequisites 
+```
+git
+nodeJS
+Docker
+Docker-compose
+```
+## Installing
+```
+git clone https://github.com/jnguyen0220/Ports-Of-Call"
+npm install
+```
+
+## Running 
+
+### Local
+```
+npm start
+```
+### Docker
+```
+docker-compose up -d --build
+```
+
+
