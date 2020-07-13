@@ -208,3 +208,10 @@ form>div {
     box-shadow: inset 0 1px 3px #ddd;
     box-sizing: border-box;
 }
+
+.remove {
+    background: rgb(223, 117, 20);
+    padding: 2px 1em;
+    border-radius: 0.2em;
+    color: white;
+}

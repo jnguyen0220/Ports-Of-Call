@@ -34,7 +34,7 @@ const loadFormData = (data, title, saveButtonTitle) => {
     element.disabled = true;
     custom.disabled = isRemove;
     save.innerHTML = saveButtonTitle;
-    save.style = `background: ${ isRemove ? 'rgb(223, 117, 20)' : 'rgb(66, 184, 221)'};`;
+    //save.style = `background: ${ isRemove ? 'rgb(223, 117, 20)' : 'rgb(66, 184, 221)'};`;
     modalTitle.innerHTML = title;
     select.value = data.schedule_interval;
     select.disabled = isRemove;
@@ -53,8 +53,11 @@ const editJob = (item) => {
 }
 
 const removeJob = (item) => {
-    const { data } = gridOptions.api.getRowNode(item.id);
+    const { data } = gridOptions.api.getRowNode(item.id),
+        save = domElement.get('SAVE');
+
     loadFormData(data, "Remove", 'Remove');
+    save.className = 'remove';
 }
 
 const cloneJob = (item) => {
