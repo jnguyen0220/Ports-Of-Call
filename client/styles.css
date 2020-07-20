@@ -178,6 +178,7 @@ select {
 
 .data-form input[type="text"]:focus,
 .data-form input[type="number"]:focus,
+input[type="text"]:focus,
 select:focus {
     outline: 0;
     border-color: rgb(18, 159, 234);
