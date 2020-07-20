@@ -48,7 +48,7 @@ const task = async(x) => {
 }
 
 const cleanSaveObject = (list) => {
-    const prop = ["schedule_interval", "url", "port", "id"];
+    const prop = ["schedule_interval", "url", "port"];
     return list.map(x => prop.reduce((a, c) => ({
         ...a,
         [c]: x[c]

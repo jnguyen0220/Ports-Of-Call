@@ -92,8 +92,9 @@ const setupSearchText = (node) => {
 }
 
 const setupUpload = (node) => {
+    const onClick = (event) => event.target.value = null;
     render(node, html `
-        <input type="file" onchange=${upload} style="display:none" />
+        <input type="file" onchange=${upload} onclick=${onClick} style="display:none" />
     `);
 }
 
@@ -148,6 +149,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     Message(grid.api, clientConnect);
     renderToolBtnGroupComponent();
+    domElement.get('IMPORT').querySelector('input').onClick = (event) => {
+        console.log('test');
+        event.target.value = null;
+    }
 });
 
 const renderToolBtnGroupComponent = (state) => {
