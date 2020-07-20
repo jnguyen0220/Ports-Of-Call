@@ -2,9 +2,11 @@ const { html, render } = lighterhtml;
 
 export const createStatusComponent = (node, filterGrid, { total, green, red, gray }) => {
     render(node, html `
-        <label><span>Total:${total} |</<span></label>
-        <label><input type="checkbox" value="1" onchange=${filterGrid} /><span>&#128308 ${red} |</span></label>
-        <label><input type="checkbox" value="2" onchange=${filterGrid} /><span>&#128994 ${green} |</span></label>
-        <label><input type="checkbox" value="3" onchange=${filterGrid} /><span>&#128280 ${gray}</span></label>
+        <div class="pill">
+            <label style="background: rgb(18, 159, 234);">Total: ${total}</label>
+            <label style="background: red;"><input type="checkbox" onchange=${filterGrid} value="1" /> ${red}</label>
+            <label style="background: green;"><input type="checkbox" onchange=${filterGrid} value="2" /> ${green}</label>
+            <label style="background: gray;"><input type="checkbox" onchange=${filterGrid} value="3" /> ${gray}</label>
+        <div>
     `);
 }

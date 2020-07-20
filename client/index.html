@@ -13,26 +13,6 @@
 </head>
 
 <body>
-    <style>
-        .bold-row {
-            font-weight: bold;
-        }
-        
-        .example-wrapper {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        
-        .top {
-            flex: 1 1 auto;
-        }
-        
-        .bottom {
-            flex: none;
-            height: 60px;
-        }
-    </style>
     <a id="hiddenDownload" style="display:none"></a>
     <div id="hiddenUpload"></div>
     <div class="grid-container">
@@ -46,9 +26,9 @@
                 <span>🛳️ Ports Of Call</span>
             </div>
         </div>
-        <div style="padding: 0 .6rem; line-height: 100%;" class="checkboxes" id="status"></div>
         <div class="main">
-            <div id="mainGrid" style="height: 100%; width:100%; padding: .1rem 0.5rem" class="ag-theme-alpine"></div>
+            <div id="status"></div>
+            <div id="mainGrid" style="height: 100%; width:100%;" class="ag-theme-alpine"></div>
         </div>
         <div class="footer">
             <div class="center">
@@ -57,8 +37,7 @@
             <div class="center" id="copyright_node"></div>
         </div>
     </div>
-    <div id="mdlAdd" class="modal">
-    </div>
+    <div id="mdlAdd" class="modal"></div>
 </body>
 
 </html>

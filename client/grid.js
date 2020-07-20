@@ -1,4 +1,4 @@
-import { createCircleString } from './template.js'
+import { createCircle } from './template.js'
 const { html, render } = lighterhtml;
 
 const convertToLocalTimeString = (params) => {
@@ -22,28 +22,27 @@ const btnRemoveRenderer = (onActionMenu) => (value) => {
 
     return html.node `
         <div class="btn-group">
-            <button title="edit" onclick=${onClick('edit')}>&#9998</button>
-            <button title="clone" onclick=${onClick('clone')}>&#x21CA</button>
+            <button title="edit" onclick=${onClick('edit')}>Edit</button>
+            <button title="clone" onclick=${onClick('clone')}>Clone</button>
         </div>
     `;
 }
 
 const config_color = new Map([
-    [1, '&#128308'],
-    [2, '&#128994'],
-    [3, '&#128280']
+    [1, createCircle('red')],
+    [2, createCircle('green')],
+    [3, createCircle('gray')]
 ]);
 
 const availableIndicator = (params) => {
-    return config_color.get(params.value) || '&#128280';
+    return html.node `${ config_color.get(params.value) || config_color.get(3) }`;
 }
 
 const columnDefs = (onActionMenu) => ([{
         headerName: "Action",
-        cellClass: ['center'],
         cellRenderer: btnRemoveRenderer(onActionMenu)
     },
-    { headerName: "Available", field: "status", cellRenderer: availableIndicator, sortable: true, suppressMenu: true },
+    { headerName: "Available", field: "status", cellRenderer: availableIndicator, sortable: true, suppressMenu: true, cellClass: ['center'] },
     { headerName: "Uptime", field: "uptime", suppressMenu: true, valueFormatter: (params) => params.value ? `${params.value} %` : '' },
     { headerName: "Last Ping Time", field: "lastPingDate", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocalTimeString },
     { headerName: "Last Status Change", field: "lastStatusChange", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocaleString },

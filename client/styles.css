@@ -7,10 +7,9 @@
 
 .grid-container {
     display: grid;
-    grid-template-rows: 2.5em 1em auto 2.5em;
+    grid-template-rows: 40px 1fr 40px;
     width: 100vw;
     height: 100vh;
-    grid-gap: 0.1rem;
 }
 
 .header {
@@ -302,23 +301,40 @@ select:focus {
     border-radius: 5px 0 0 5px
 }
 
-
-/* Add a background color on hover */
-
 .btn-group button:hover {
     opacity: 0.8;
 }
 
-.checkboxes label {
-    display: inline-block;
-    padding-right: 10px;
-    white-space: nowrap;
+input[type="checkbox"] {
+    position: relative;
+    top: 1px;
 }
 
-.checkboxes input {
-    vertical-align: middle;
+.pill {
+    display: flex;
+    align-items: center;
+    color: white;
+    padding: 0 0 .2em 0;
 }
 
-.checkboxes label span {
-    vertical-align: middle;
+.pill label {
+    padding: 0 0.5em;
+}
+
+.pill label:first-child {
+    border-radius: 5px 0 0 5px
+}
+
+.pill label:nth-last-child(2) {
+    border-radius: 0 5px 5px 0;
+}
+
+.pill input[type="checkbox"] {
+    cursor: pointer;
+}
+
+.main {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    padding: .4em;
 }
