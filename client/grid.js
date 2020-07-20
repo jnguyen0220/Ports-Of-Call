@@ -69,6 +69,7 @@ export const gridOptions = (onRowSelected, onRowDataUpdated, doesExternalFilterP
         minWidth: 100,
         resizable: true,
         headerCheckboxSelection: isFirstColumn,
+        headerCheckboxSelectionFilteredOnly: true,
         checkboxSelection: isFirstColumn,
     },
     isExternalFilterPresent: () => true,
