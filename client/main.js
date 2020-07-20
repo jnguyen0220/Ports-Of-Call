@@ -1,292 +1,221 @@
+import { createFormComponent } from './component/form.js';
+import { createToolBtnGroupComponent } from './component/toolBtnGroup.js';
+import { createStatusComponent } from './component/status.js';
+import { gridOptions } from './grid.js';
+import { deleteFormComponent } from './component/confirm.js';
+import { Message, Send } from './message.js';
+const { html, render } = lighterhtml;
 const socket = io();
 
-const availableIndicator = (params) => {
-    const config = {
-        1: 'red',
-        2: 'green',
-        3: 'grey'
-    };
-    return `
-        <svg class="center" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-            <circle cx="50%" cy="50%" r="8" fill="${config[params.value] || 'grey'}" />
-        </svg>
-    `;
-}
+let externalFilter = [];
 
-const toggleJob = (data) => {
-    socket.emit('toggle', data.id);
-}
-
-const loadFormData = (data, title, saveButtonTitle) => {
-    const isRemove = title === 'Remove',
-        modal = domElement.get('MODAL'),
-        save = domElement.get('SAVE'),
-        select = domElement.get('SELECT'),
-        custom = domElement.get('CUSTOM'),
-        modalTitle = domElement.get('MODAL_TITLE'),
-        formItem = domElement.get('FORM_ITEMS'),
-        formData = Object.keys(data).map(x => ({
-            field: x,
-            value: data[x]
-        })),
-        element = getFormItem('schedule_interval');
-
-    element.disabled = true;
-    custom.disabled = isRemove;
-    save.innerHTML = saveButtonTitle;
-    //save.style = `background: ${ isRemove ? 'rgb(223, 117, 20)' : 'rgb(66, 184, 221)'};`;
-    modalTitle.innerHTML = title;
-    select.value = data.schedule_interval;
-    select.disabled = isRemove;
-    Array.from(formItem).forEach(x => {
-        x.disabled = isRemove
+const onRowSelected = (event) => {
+    const selectedRows = grid.api.getSelectedRows();
+    renderToolBtnGroupComponent({
+        isDeleteDisabled: selectedRows.length === 0,
+        isToggleDisabled: selectedRows.length === 0
     });
-    element.disabled = true;
-    setFormData(formData);
-    enableSaveButton(save, true);
-    modal.style.display = 'flex';
+}
+
+const onRowDataUpdated = () => {
+    statusUpdate();
+}
+
+const onActionMenu = (mode, data) => {
+    createFormComponent({ node: domElement.get('MODAL'), handlers: { save }, data, mode });
+}
+
+const doesExternalFilterPass = (node) => {
+    return externalFilter.length ? externalFilter.some(x => x === node.data.status) : true;
+}
+
+const grid = gridOptions(onRowSelected, onRowDataUpdated, doesExternalFilterPass, onActionMenu);
+
+const toggle = () => {
+    const selectedRows = grid.api.getSelectedRows();
+    Send('toggle', selectedRows.map(x => x.id));
+    grid.api.deselectAll();
+}
+
+const save = (mode, data) => {
+    Send(mode, data);
+}
+
+const add = () => {
+    createFormComponent({ node: domElement.get('MODAL'), handlers: { save } });
 }
 
 const editJob = (item) => {
-    const { data } = gridOptions.api.getRowNode(item.id);
+    const { data } = grid.api.getRowNode(item.id);
     loadFormData(data, 'Edit', 'Save');
 }
 
-const removeJob = (item) => {
-    const { data } = gridOptions.api.getRowNode(item.id),
-        save = domElement.get('SAVE');
-
-    loadFormData(data, "Remove", 'Remove');
-    save.className = 'remove';
-}
-
 const cloneJob = (item) => {
-    const { data } = gridOptions.api.getRowNode(item.id);
+    const { data } = grid.api.getRowNode(item.id);
     loadFormData(data, "Clone", 'Clone');
 }
 
-const btnRemoveRenderer = (value) => {
-    const { data } = value,
-    config = new Map([
-            ['Edit', editJob],
-            ['Clone', cloneJob],
-            ['Remove', removeJob],
-            ['Toggle', toggleJob]
-        ]),
-        select = document.createElement('select'),
-        empty = document.createElement("option");
-
-    empty.value = "";
-    select.appendChild(empty);
-
-    Array.from(config.keys()).forEach(x => {
-        const option = document.createElement("option");
-        option.value = x;
-        option.innerHTML = x;
-        select.appendChild(option);
-    });
-
-    select.onchange = () => {
-        config.get(select.value)(data);
-        select.value = "";
-        select.blur();
-    };
-    return select;
+const onFilterTextBoxChanged = (event) => {
+    const { value } = event.target;
+    grid.api.setQuickFilter(value);
 }
 
-const convertToLocalTimeString = (params) => {
-    return new Date(params.value).toLocaleTimeString();
-}
+const clientConnect = ({ serverStartDate, schedule }) => {
+    const serverStart = new Date(serverStartDate),
+        monitor_html = html `
+                Monitor since: ${serverStart.toLocaleString()}
+            `,
+        copyright_html = html `
+                <div class="text-right">Copyright © ${serverStart.getFullYear()} by <a href="mailto:jonny_nguyen@outlook.com">Jonny Nguyen</a></div>
+            `;
 
-const convertToLocaleString = (params) => {
-    return new Date(params.value).toLocaleString();
-}
-
-const columnDefs = [{
-        headerName: "Action",
-        cellRenderer: btnRemoveRenderer
-    },
-    { headerName: "Available", field: "status", cellRenderer: availableIndicator, sortable: true, suppressMenu: true, cellClass: ['center'] },
-    { headerName: "Last Ping Time", field: "lastPingDate", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocalTimeString },
-    { headerName: "Last Status Change", field: "lastStatusChange", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocaleString },
-    {
-        headerName: "Url",
-        field: "url",
-        filter: 'agTextColumnFilter',
-        filterParams: {
-            buttons: ['reset', 'apply'],
-        },
-    },
-    { headerName: "Port", field: "port" },
-    { headerName: "Schedule_Interval", field: "schedule_interval", cellRenderer: 'agAnimateShowChangeCellRenderer' }
-];
-
-const gridOptions = {
-    columnDefs: columnDefs,
-    getRowNodeId: (data) => {
-        return data.id;
-    },
-    suppressCellSelection: true,
-
-};
-
-const onFilterTextBoxChanged = () => {
-    gridOptions.api.setQuickFilter(document.getElementById('txtFilter').value);
+    render(document.getElementById('copyright_node'), copyright_html);
+    render(document.getElementById('monitor_node'), monitor_html)
+    grid.api.setRowData(schedule);
+    grid.api.sizeColumnsToFit();
 }
 
 const domElement = new Map();
 
 const domControlInit = () => {
-    domElement.set('ADD', document.getElementById('btnAdd'));
     domElement.set('MODAL', document.getElementById('mdlAdd'));
-    domElement.set('CLOSE', document.getElementById("btnClose"));
-    domElement.set('SAVE', document.getElementById('btnSave'));
-    domElement.set('SELECT', document.getElementById('sltInterval'));
-    domElement.set('MONITOR', document.getElementById('monitorDate'));
-    domElement.set('CUSTOM', document.getElementById('chkCustom'));
-    domElement.set('FORM_ITEMS', document.getElementById('frmAdd').querySelectorAll('[name]'));
-    domElement.set('GRID', document.getElementById('myGrid'));
-    domElement.set('MODAL_TITLE', document.getElementById('mdlTitle'));
-    domElement.set('CURRENT_YEAR', document.getElementById('currentYear'));
+    domElement.set('SEARCH', document.getElementById('searchTxt'));
+    domElement.set('IMPORT', document.getElementById('hiddenUpload'));
+    domElement.set('TOOL', document.getElementById('toolBtnGroup'));
+    domElement.set('STATUS', document.getElementById('status'));
 };
 
-const getFormItem = (name) => {
-    return Array.from(domElement.get('FORM_ITEMS')).find(x => x.name === name);
+const setupSearchText = (node) => {
+    render(node, html `
+        <input type="text" class="filter" placeholder="Filter..." oninput="${onFilterTextBoxChanged}" />
+    `);
 }
 
-const setClientDates = (serverStartDate) => {
-    const monitor = domElement.get('MONITOR'),
-        year = domElement.get('CURRENT_YEAR');
-
-    year.innerHTML = serverStartDate.getFullYear();
-    monitor.innerHTML = serverStartDate.toLocaleString();
+const setupUpload = (node) => {
+    render(node, html `
+        <input type="file" onchange=${upload} style="display:none" />
+    `);
 }
 
-const domControlEventInit = () => {
-    const select = domElement.get('SELECT'),
-        custom = domElement.get('CUSTOM'),
-        modal = domElement.get('MODAL'),
-        add = domElement.get('ADD'),
-        close = domElement.get('CLOSE'),
-        save = domElement.get('SAVE'),
-        formItems = domElement.get('FORM_ITEMS');
+const config_count = {
+    defaultValues: () => ({
+        total: 0,
+        green: 0,
+        red: 0,
+        gray: 0
+    }),
+    lookup: [
+        { key: 1, value: 'red' },
+        { key: 2, value: 'green' },
+        { key: 3, value: 'gray' },
+    ]
+}
 
-    select.onchange = () => {
-        const value = select.options[select.selectedIndex].value,
-            element = getFormItem('schedule_interval');
-        element.value = value;
-    }
+const filterGrid = (event) => {
+    const { value, checked } = event.target;
+    const _value = Number(value);
+    externalFilter = checked ? externalFilter.concat(_value) : externalFilter.filter(x => x !== _value);
+    grid.api.onFilterChanged();
+}
 
-    custom.onchange = () => {
-        const checked = custom.checked,
-            element = getFormItem('schedule_interval');
-        element.disabled = !checked;
-    }
+const statusUpdate = () => {
+    const result = getStatusCount(config_count);
+    createStatusComponent(domElement.get('STATUS'), filterGrid, result);
+}
 
-    save.onclick = () => {
-        const data = getFormData(formItems);
-        switch (save.innerHTML) {
-            case "Remove":
-                socket.emit('remove', data.id);
-                break;
-            case "Clone":
-                const { id, ...rest } = data;
-                socket.emit('new', rest);
-                break;
-            default:
-                socket.emit(data.id ? 'update' : 'new', data);
-                break;
+const getStatusCount = (config_count) => {
+    const status = config_count.defaultValues();
 
-        }
-        close.click();
-    }
-
-    add.onclick = () => {
-        formReset(save, formItems);
-        loadFormData({
-            port: 80,
-            schedule_interval: '*/5 * * * * *'
-        }, 'New', 'Save');
-        select.selectedIndex = 0;
-        enableSaveButton(save, false);
-    }
-
-    close.onclick = () => modal.style.display = "none";
-    formOnChange(save, formItems);
+    grid.api.forEachNodeAfterFilter(x => {
+        status.total += 1;
+        const found = config_count.lookup.find(y => y.key === x.data.status);
+        status[found ? found.value : 'gray'] += 1
+    });
+    return status;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     domControlInit();
-    domControlEventInit();
-    new agGrid.Grid(domElement.get('GRID'), gridOptions);
+    new agGrid.Grid(document.getElementById('mainGrid'), grid);
+
+    const monitor = document.getElementById('monitor_node'),
+        copyright = document.getElementById('copyright_node'),
+        upload = document.getElementById('hiddenUpload'),
+        search = domElement.get('SEARCH');
+
+    setupSearchText(search);
+    setupUpload(upload);
+
+    Message(grid.api, clientConnect);
+    renderToolBtnGroupComponent();
 });
 
-const setFormData = (data) => {
-    data.forEach(x => {
-        const element = getFormItem(x.field);
-        element && (element.value = x.value);
-    });
+const renderToolBtnGroupComponent = (state) => {
+    createToolBtnGroupComponent(domElement.get('TOOL'), { add, remove, upload: preUpload, toggle, download }, state);
 }
 
-const enableSaveButton = (save, status) => {
-    save.className = `save-button ${status ? 'save-button-enabled' : 'save-button-disabled'}`;
+const preUpload = () => {
+    const element = domElement.get('IMPORT').querySelector('input');
+    element.click();
 }
 
-const formOnChange = (save, formItems) => {
-    formItems.forEach(x => x.oninput = () => {
-        const valid = formValid(formItems);
-        enableSaveButton(save, valid);
-    })
-}
-
-const formValid = (formItems) => {
-    return Array.from(formItems).filter(x => x.required).every(x => x.value)
-}
-
-const formReset = (save, formItems) => {
-    formItems.forEach(x => x.value = "");
-    enableSaveButton(save, false);
-}
-
-const getFormData = (items) => {
-    let result = {};
-    items.forEach(x => {
-        result[x.name] = x.value
-    });
-    return result;
-}
-
-const topicUpdate = (msg) => {
-    const rowNode = gridOptions.api.getRowNode(msg.id);
-    if (rowNode) {
-        const sort = [
-            { colId: 'status', sort: 'asc' },
-        ]
-        updateItem = {...rowNode.data, ...msg };
-        gridOptions.api.applyTransactionAsync({ update: [updateItem] });
-        msg.status === 1 && gridOptions.api.setSortModel(sort);
+const upload = async(evt) => {
+    const element = domElement.get('IMPORT').querySelector('input');
+    try {
+        const data = await readFileAsync(element.files[0]);
+        socket.emit('import', data);
+    } catch (e) {
+        console.log(e);
     }
 }
 
-const topicNew = (msg) => {
-    gridOptions.api.applyTransaction({ add: [msg] });
+const readFileAsync = (file) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            resolve(JSON.parse(reader.result));
+        };
+        reader.onerror = reject;
+        reader.readAsText(file);
+    })
 }
 
-const topicRemove = (msg) => {
-    const rowNode = gridOptions.api.getRowNode(msg);
-    gridOptions.api.applyTransaction({ remove: [rowNode.data] });
+const pickProperties = (props, data) => {
+    return props.reduce((a, c) => ({
+        ...a,
+        [c]: data[c]
+    }), {});
 }
 
-const topicInit = ({ serverStartDate, schedule }) => {
-    setClientDates(new Date(serverStartDate));
-    gridOptions.api.setRowData(schedule);
-    gridOptions.api.sizeColumnsToFit();
+const download = () => {
+    const data = getDownloadData(),
+        dataStr = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(data,null,2))}`,
+        element = document.getElementById('hiddenDownload');
+
+    element.setAttribute("href", dataStr);
+    element.setAttribute("download", "export.json");
+    element.click();
 }
 
-[
-    { topic: 'new', func: topicNew },
-    { topic: 'remove', func: topicRemove },
-    { topic: 'init', func: topicInit },
-    { topic: 'update', func: topicUpdate },
+const getDownloadData = () => {
+    const data = [],
+        props = [
+            "schedule_interval",
+            "url",
+            "port"
+        ];
 
-].forEach(x => socket.on(x.topic, x.func));
+    grid.api.forEachNodeAfterFilterAndSort(x => data.push(x.data));
+    return data.map(x => pickProperties(props, x));
+}
+
+const remove = async() => {
+    const selectedRows = grid.api.getSelectedRows();
+    const modal = domElement.get('MODAL');
+    try {
+        await deleteFormComponent(modal, selectedRows.length);
+        Send('remove', selectedRows.map(x => x.id));
+    } catch (e) {} finally {
+        modal.style.display = 'none';
+    }
+}

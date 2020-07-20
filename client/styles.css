@@ -7,19 +7,15 @@
 
 .grid-container {
     display: grid;
-    grid-template-rows: 2.5em auto 2.5em;
+    grid-template-rows: 2.5em 1em auto 2.5em;
     width: 100vw;
     height: 100vh;
+    grid-gap: 0.1rem;
 }
 
 .header {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-}
-
-.modal-header {
-    display: grid;
-    grid-template-columns: 80% 20%;
 }
 
 .footer {
@@ -79,10 +75,11 @@
 
 .modal-content {
     position: relative;
-    background-color: #fefefe;
+    color: #212529;
+    background-color: #fff;
+    background-clip: border-box;
+    border-radius: .25rem;
     margin: auto;
-    padding: 0;
-    border: 1px solid #888;
     width: 30%;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     -webkit-animation-name: animatetop;
@@ -120,7 +117,6 @@
 /* The Close Button */
 
 .close {
-    color: white;
     float: right;
     font-size: 26px;
     font-weight: bold;
@@ -135,17 +131,40 @@
 }
 
 .modal-header {
-    padding: 0.2em 0.4em;
-    background: #2d3e50;
-    color: white;
+    display: grid;
+    font-weight: bold;
+    padding: .2rem .4rem 0 .4rem;
+    border-radius: .25rem .25rem 0 0;
+    grid-template-columns: 80% 20%;
+    color: #212529;
+    margin-bottom: 0;
+    background-color: rgba(0, 0, 0, .03);
+    border-bottom: 1px solid rgba(0, 0, 0, .125);
+}
+
+.modal-footer {
+    display: grid;
+    font-weight: bold;
+    padding: .2rem .4rem .4rem 0;
+    border-radius: 0 0 .25rem .25rem;
+    color: #212529;
+    margin-bottom: 0;
+    background-color: rgba(0, 0, 0, .03);
+    border-top: 1px solid rgba(0, 0, 0, .125);
 }
 
 .modal-body {
     padding: 0.2em 0.4em;
 }
 
-form input[type="text"],
-form input[type="number"],
+.modal-body.delete {
+    display: grid;
+    grid-template-rows: 1rem auto;
+    grid-gap: .5rem;
+}
+
+.data-form input[type="text"],
+.data-form input[type="number"],
 select {
     width: 100%;
     display: inline-block;
@@ -157,14 +176,14 @@ select {
     box-sizing: border-box;
 }
 
-input[type="text"]:focus,
-input[type="number"]:focus,
+.data-form input[type="text"]:focus,
+.data-form input[type="number"]:focus,
 select:focus {
     outline: 0;
     border-color: rgb(18, 159, 234);
 }
 
-form>div {
+.data-form>div {
     padding-top: 0.3em;
 }
 
@@ -214,4 +233,91 @@ form>div {
     padding: 2px 1em;
     border-radius: 0.2em;
     color: white;
+}
+
+
+/* .btn-group button {
+    padding: .2em .5em;
+    border: none;
+    background-color: rgb(18, 159, 234);
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 100%;
+    border-right: 1px solid black;
+} */
+
+.btn-group button {
+    padding: .2em .5em;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    background-color: rgb(18, 159, 234);
+    line-height: 100%;
+    border-right: 1px solid black;
+}
+
+.btn-group button:disabled {
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+.btn-group {
+    display: flex;
+    justify-content: center;
+}
+
+.btn-group.left {
+    justify-content: flex-start;
+}
+
+.btn-group.right {
+    justify-content: flex-end;
+}
+
+.btn-group button:focus {
+    /* White text */
+    outline: none;
+    /* Float the buttons side by side */
+}
+
+
+/* Clear floats (clearfix hack) */
+
+.btn-group:after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+.btn-group button:last-child {
+    border-right: none;
+}
+
+.btn-group button:last-child {
+    border-radius: 0 5px 5px 0
+}
+
+.btn-group button:first-child {
+    border-radius: 5px 0 0 5px
+}
+
+
+/* Add a background color on hover */
+
+.btn-group button:hover {
+    opacity: 0.8;
+}
+
+.checkboxes label {
+    display: inline-block;
+    padding-right: 10px;
+    white-space: nowrap;
+}
+
+.checkboxes input {
+    vertical-align: middle;
+}
+
+.checkboxes label span {
+    vertical-align: middle;
 }

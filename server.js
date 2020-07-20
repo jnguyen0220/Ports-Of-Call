@@ -13,11 +13,18 @@ const express = require('express'),
 
 db.defaults({ destination: [] }).write();
 
-
-
-let schedule = db.get('destination').cloneDeep().value();
+let schedule = util.addId(db.get('destination').value());
 
 const stopList = new Set();
+
+const uptime = new Map();
+
+const calculateUptime = (id, status) => {
+    !uptime.has(id) && uptime.set(id, [0, 0]);
+    const record = uptime.get(id);
+    record[status === 1 ? 0 : 1] += 1;
+    return (record[1] / (record[0] + record[1]) * 100).toFixed(0);
+}
 
 const task = async(x) => {
     let result = 2;
@@ -32,6 +39,7 @@ const task = async(x) => {
 
         if (found) {
             found['lastPingDate'] = lastPingDate;
+            found['uptime'] = calculateUptime(x.id, result);
             found['status'] !== result && (found['lastStatusChange'] = lastPingDate);
             found['status'] = result;
         }
@@ -76,7 +84,10 @@ const stopComplete = (data) => {
 const scheduleManager = new ScheduleManager(task, stopComplete);
 scheduleManager.load(schedule);
 
-app.use(express.static('./client'));
+static_config = [
+    { client_path: "/", server_path: "./client" },
+    { client_path: "/lighterhtml", server_path: "./node_modules/lighterhtml" }
+].forEach(x => app.use(x.client_path, express.static(x.server_path)))
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
@@ -89,35 +100,47 @@ const addDestination = (item) => {
     if (success) {
         schedule = schedule.concat(result);
         db.set('destination', cleanSaveObject(schedule)).write();
-        io.emit('new', result);
+        io.emit('add', [result]);
     }
 }
 
-const toggleTimer = (id) => {
-    if (stopList.has(id)) {
-        scheduleManager.start(id);
-        stopList.delete(id);
-    } else {
-        scheduleManager.stop(id);
-        stopList.add(id);
-    }
+const toggleTimer = (ids) => {
+    ids.forEach(x => {
+        if (stopList.has(x)) {
+            scheduleManager.start(x);
+            stopList.delete(x);
+        } else {
+            scheduleManager.stop(x);
+            stopList.add(x);
+        }
+    });
 }
 
 const updateDestination = ({ id, ...rest }) => {
     scheduleManager.update({...rest, id: Number(id) });
 }
 
-const removeDestination = (id) => {
-    scheduleManager.remove(Number(id));
+const removeDestination = (ids) => {
+    ids.forEach(x => scheduleManager.remove(Number(x)));
+}
+
+const importData = (data) => {
+    const result = util.addId(data);
+    schedule = schedule.concat(result);
+    scheduleManager.load(result);
+    db.set('destination', cleanSaveObject(schedule)).write();
+    io.emit('add', result);
 }
 
 io.on('connection', (socket) => {
     socket.emit('init', { serverStartDate, schedule: schedule.sort((a, b) => b.status - a.status) });
     [
-        { topic: 'update', func: updateDestination },
-        { topic: 'new', func: addDestination },
+        { topic: 'edit', func: updateDestination },
+        { topic: 'add', func: addDestination },
+        { topic: 'clone', func: addDestination },
         { topic: 'remove', func: removeDestination },
-        { topic: 'toggle', func: toggleTimer }
+        { topic: 'toggle', func: toggleTimer },
+        { topic: 'import', func: importData }
     ].forEach(x => socket.on(x.topic, x.func));
 });
 
