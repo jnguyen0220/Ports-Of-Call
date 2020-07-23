@@ -164,6 +164,7 @@
 
 .data-form input[type="text"],
 .data-form input[type="number"],
+textarea,
 select {
     width: 100%;
     display: inline-block;
@@ -175,9 +176,14 @@ select {
     box-sizing: border-box;
 }
 
+textarea {
+    resize: none;
+}
+
 .data-form input[type="text"]:focus,
 .data-form input[type="number"]:focus,
 input[type="text"]:focus,
+textarea:focus,
 select:focus {
     outline: 0;
     border-color: rgb(18, 159, 234);

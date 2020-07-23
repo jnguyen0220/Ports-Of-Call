@@ -1,49 +1,44 @@
 {
   "destination": [
     {
-      "schedule_interval": "*/5 * * * * *",
+      "protocol": "TCP",
+      "scheduleInterval": "*/5 * * * * *",
+      "timeout": 2500,
       "url": "google.com",
-      "port": "80"
+      "port": "80",
+      "requestMethod": "",
+      "headers": "",
+      "body": ""
     },
     {
-      "schedule_interval": "*/5 * * * * *",
+      "protocol": "HTTPS",
+      "scheduleInterval": "*/5 * * * * *",
+      "timeout": 2500,
       "url": "google.com",
-      "port": "80"
+      "port": 443,
+      "requestMethod": "GET",
+      "headers": "",
+      "body": ""
     },
     {
-      "schedule_interval": "*/10 * * * * *",
+      "protocol": "HTTP",
+      "scheduleInterval": "*/5 * * * * *",
+      "timeout": 2500,
       "url": "google.com",
-      "port": "443"
+      "port": 80,
+      "requestMethod": "GET",
+      "headers": "{\"test\":\"jonny\"}",
+      "body": ""
     },
     {
-      "schedule_interval": "*/5 * * * * *",
-      "url": "amazon.com",
-      "port": "80"
-    },
-    {
-      "schedule_interval": "*/5 * * * * *",
-      "url": "amazon.com",
-      "port": "443"
-    },
-    {
-      "schedule_interval": "*/5 * * * * *",
-      "url": "blizzard.com",
-      "port": "80"
-    },
-    {
-      "schedule_interval": "*/5 * * * * *",
-      "url": "google.com",
-      "port": "80"
-    },
-    {
-      "schedule_interval": "*/5 * * * * *",
-      "url": "google.com",
-      "port": "80"
-    },
-    {
-      "schedule_interval": "*/5 * * * * *",
-      "url": "blizzard.com",
-      "port": "808"
+      "protocol": "TCP",
+      "scheduleInterval": "*/5 * * * * *",
+      "timeout": 2500,
+      "url": "8.8.8.8",
+      "port": "53",
+      "requestMethod": "",
+      "headers": "",
+      "body": ""
     }
   ]
 }

@@ -45,16 +45,6 @@ const add = () => {
     createFormComponent({ node: domElement.get('MODAL'), handlers: { save } });
 }
 
-const editJob = (item) => {
-    const { data } = grid.api.getRowNode(item.id);
-    loadFormData(data, 'Edit', 'Save');
-}
-
-const cloneJob = (item) => {
-    const { data } = grid.api.getRowNode(item.id);
-    loadFormData(data, "Clone", 'Clone');
-}
-
 const onFilterTextBoxChanged = (event) => {
     const { value } = event.target;
     grid.api.setQuickFilter(value);
@@ -205,9 +195,14 @@ const download = () => {
 const getDownloadData = () => {
     const data = [],
         props = [
-            "schedule_interval",
+            "protocol",
+            "scheduleInterval",
+            "timeout",
             "url",
-            "port"
+            "port",
+            "requestMethod",
+            "headers",
+            "body"
         ];
 
     grid.api.forEachNodeAfterFilterAndSort(x => data.push(x.data));

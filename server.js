@@ -15,6 +15,21 @@ db.defaults({ destination: [] }).write();
 
 let schedule = util.addId(db.get('destination').value());
 
+const config = {
+    required: ['protocol', 'scheduleInterval', 'timeout', 'url', 'port', 'requestMethod', 'headers', 'body', 'timeout']
+}
+
+const getAssignTask = (protocol) => {
+    return protocol === 'TCP' ? pingTask : httpTask;
+}
+
+const assignTask = (data) => {
+    return data.map(x => ({
+        data: x,
+        task: getAssignTask(x.protocol)
+    }));
+}
+
 const stopList = new Set();
 
 const uptime = new Map();
@@ -26,30 +41,46 @@ const calculateUptime = (id, status) => {
     return (record[1] / (record[0] + record[1]) * 100).toFixed(0);
 }
 
-const task = async(x) => {
+const pingTask = async(x) => {
     let result = 2;
     try {
-        await util.ping(x.url, x.port);
+        await util.ping(x);
     } catch (e) {
         console.log(e);
         result = 1
     } finally {
-        const lastPingDate = new Date(),
-            found = schedule.find(y => y.id === x.id);
-
-        if (found) {
-            found['lastPingDate'] = lastPingDate;
-            found['uptime'] = calculateUptime(x.id, result);
-            found['status'] !== result && (found['lastStatusChange'] = lastPingDate);
-            found['status'] = result;
-        }
-        io.emit('update', found);
+        requestCompleted(x.id, result);
     }
 }
 
+const httpTask = async(x) => {
+    let result = 2;
+    try {
+        const temp = await util.http(x);
+        result = temp.status === 200 ? 2 : 1;
+    } catch (e) {
+        console.log(e);
+        result = 1
+    } finally {
+        requestCompleted(x.id, result);
+    }
+}
+
+const requestCompleted = (id, result) => {
+    const lastPingDate = new Date(),
+        found = schedule.find(x => x.id === id);
+
+    if (found) {
+        found['lastPingDate'] = lastPingDate;
+        found['uptime'] = calculateUptime(id, result);
+        found['status'] !== result && (found['lastStatusChange'] = lastPingDate);
+        found['status'] = result;
+    }
+    io.emit('update', found);
+};
+
 const cleanSaveObject = (list) => {
-    const prop = ["schedule_interval", "url", "port"];
-    return list.map(x => prop.reduce((a, c) => ({
+    return list.map(x => config.required.reduce((a, c) => ({
         ...a,
         [c]: x[c]
     }), {}));
@@ -74,15 +105,18 @@ const stopComplete = (data) => {
             db.set('destination', cleanSaveObject(schedule)).write();
             stopList.delete(id);
             scheduleManager.jobs.delete(id);
-            const success = scheduleManager.add(item);
+            const success = scheduleManager.add({
+                data: item,
+                task: getAssignTask(item.protocol)
+            });
             success && io.emit('update', {...item, status: 3 });
             break;
     }
     scheduleManager.stopStatus.delete(id);
 }
 
-const scheduleManager = new ScheduleManager(task, stopComplete);
-scheduleManager.load(schedule);
+const scheduleManager = new ScheduleManager(stopComplete);
+scheduleManager.load(assignTask(schedule));
 
 static_config = [
     { client_path: "/", server_path: "./client" },
@@ -95,7 +129,7 @@ app.get('/', (req, res) => {
 
 const addDestination = (item) => {
     const result = {...item, id: Date.now() },
-        success = scheduleManager.add(result);
+        success = scheduleManager.add({ data: result, task: getAssignTask(result.protocol) });
 
     if (success) {
         schedule = schedule.concat(result);
@@ -127,7 +161,7 @@ const removeDestination = (ids) => {
 const importData = (data) => {
     const result = util.addId(data);
     schedule = schedule.concat(result);
-    scheduleManager.load(result);
+    scheduleManager.load(assignTask(result));
     db.set('destination', cleanSaveObject(schedule)).write();
     io.emit('add', result);
 }

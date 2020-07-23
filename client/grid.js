@@ -1,5 +1,5 @@
 import { createCircle } from './template.js'
-const { html, render } = lighterhtml;
+const { html } = lighterhtml;
 
 const convertToLocalTimeString = (params) => {
     return new Date(params.value).toLocaleTimeString();
@@ -39,23 +39,26 @@ const availableIndicator = (params) => {
 }
 
 const columnDefs = (onActionMenu) => ([{
-        headerName: "Action",
-        cellRenderer: btnRemoveRenderer(onActionMenu)
-    },
-    { headerName: "Available", field: "status", cellRenderer: availableIndicator, sortable: true, suppressMenu: true, cellClass: ['center'] },
-    { headerName: "Uptime", field: "uptime", suppressMenu: true, valueFormatter: (params) => params.value ? `${params.value} %` : '' },
-    { headerName: "Last Ping Time", field: "lastPingDate", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocalTimeString },
-    { headerName: "Last Status Change", field: "lastStatusChange", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocaleString },
+                headerName: "Action",
+                cellRenderer: btnRemoveRenderer(onActionMenu)
+            },
+            { headerName: "Available", field: "status", cellRenderer: availableIndicator, sortable: true, suppressMenu: true, cellClass: ['center'] },
+            { headerName: "Uptime", field: "uptime", suppressMenu: true, valueFormatter: (params) => params.value ? `${params.value} %` : '', cellRenderer: 'agAnimateShowChangeCellRenderer' },
+            { headerName: "Last Ping Time", field: "lastPingDate", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocalTimeString },
+            { headerName: "Last Status Change", field: "lastStatusChange", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocaleString },
+            { headerName: "Protocol", field: "protocol", valueFormatter: (params) => `${params.value} ` + `${ params.value !== 'TCP' ? `(${params.data.requestMethod})` : ''}` }, 
     {
         headerName: "Url",
         field: "url",
         filter: 'agTextColumnFilter',
+        cellRenderer: 'agAnimateShowChangeCellRenderer',
+        valueFormatter: (params) => params.data.protocol !== 'TCP' ? `${params.data.protocol.toLowerCase()}://${params.value}` : params.value,
         filterParams: {
             buttons: ['reset', 'apply'],
         },
     },
-    { headerName: "Port", field: "port" },
-    { headerName: "Schedule_Interval", field: "schedule_interval", cellRenderer: 'agAnimateShowChangeCellRenderer' }
+    { headerName: "Port", field: "port", cellRenderer: 'agAnimateShowChangeCellRenderer' },
+    { headerName: "Schedule_Interval", field: "scheduleInterval", cellRenderer: 'agAnimateShowChangeCellRenderer' }
 ]);
 
 export const gridOptions = (onRowSelected, onRowDataUpdated, doesExternalFilterPass, onActionMenu) => ({
