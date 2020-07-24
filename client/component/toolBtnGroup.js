@@ -9,7 +9,7 @@ export const createToolBtnGroupComponent = (node, handler, state = defaultState(
     const { add, remove, upload, download, toggle } = handler;
     const { isDeleteDisabled, isToggleDisabled } = state;
     render(node, html `
-        <div class="btn-group left">
+        <div class="btn-group" style="display: flex; border: 1px solid #babfc7;">
             <button onclick=${add}>&#65291; Add</button>
             <button onclick=${remove} disabled=${isDeleteDisabled} style="background-color: red;">&#9888; Delete</button>
             <button onclick=${toggle} disabled=${isToggleDisabled} >&#x21C5; Toggle</button>

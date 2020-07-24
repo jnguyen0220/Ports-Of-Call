@@ -1,4 +1,4 @@
-import { createCircle } from './template.js'
+import { createCircleString } from './template.js'
 const { html } = lighterhtml;
 
 const convertToLocalTimeString = (params) => {
@@ -29,20 +29,26 @@ const btnRemoveRenderer = (onActionMenu) => (value) => {
 }
 
 const config_color = new Map([
-    [1, createCircle('red')],
-    [2, createCircle('green')],
-    [3, createCircle('gray')]
+    [1, { svg: createCircleString('red'), display: 'Failed' }],
+    [2, { svg: createCircleString('green'), display: 'Active' }],
+    [3, { svg: createCircleString('gray'), display: 'Suspended' }]
 ]);
 
 const availableIndicator = (params) => {
-    return html.node `${ config_color.get(params.value) || config_color.get(3) }`;
+    const found = params.value ? config_color.get(params.value) : config_color.get(3);
+    return `
+        <div class="flex-center">
+            <div class="flex-center">${found.svg}</div>
+            ${found.display}
+        </div> 
+    `;
 }
 
 const columnDefs = (onActionMenu) => ([{
                 headerName: "Action",
                 cellRenderer: btnRemoveRenderer(onActionMenu)
             },
-            { headerName: "Available", field: "status", cellRenderer: availableIndicator, sortable: true, suppressMenu: true, cellClass: ['center'] },
+            { headerName: "Available", field: "status", cellRenderer: availableIndicator, sortable: true, suppressMenu: true },
             { headerName: "Uptime", field: "uptime", suppressMenu: true, valueFormatter: (params) => params.value ? `${params.value} %` : '', cellRenderer: 'agAnimateShowChangeCellRenderer' },
             { headerName: "Last Ping Time", field: "lastPingDate", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocalTimeString },
             { headerName: "Last Status Change", field: "lastStatusChange", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocaleString },

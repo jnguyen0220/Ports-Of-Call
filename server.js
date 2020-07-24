@@ -16,7 +16,7 @@ db.defaults({ destination: [] }).write();
 let schedule = util.addId(db.get('destination').value());
 
 const config = {
-    required: ['protocol', 'scheduleInterval', 'timeout', 'url', 'port', 'requestMethod', 'headers', 'body', 'timeout']
+    required: ['protocol', 'scheduleInterval', 'timeout', 'url', 'port', 'requestMethod', 'headers', 'body', 'timeout', 'successWhen', 'successStatus']
 }
 
 const getAssignTask = (protocol) => {
@@ -56,14 +56,25 @@ const pingTask = async(x) => {
 const httpTask = async(x) => {
     let result = 2;
     try {
-        const temp = await util.http(x);
-        result = temp.status === 200 ? 2 : 1;
+        const { status } = await util.http(x);
+        result = validate(x.successWhen, x.successStatus, status.toString()) ? 2 : 1;
     } catch (e) {
         console.log(e);
         result = 1
     } finally {
         requestCompleted(x.id, result);
     }
+}
+
+const validateWildCard = (exp, value) => {
+    const hasWildCard = exp.includes('*');
+    return hasWildCard ? exp[0] === value[0] : exp === value;
+}
+
+const validate = (successWhen, successStatus, value) => {
+    const status = successStatus.split(',');
+    const result = status.some(x => validateWildCard(x, value));
+    return successWhen === "1" ? result : !result;
 }
 
 const requestCompleted = (id, result) => {

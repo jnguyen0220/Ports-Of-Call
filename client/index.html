@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <title>Ports of Call</title>
     <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
-    <!-- <script src="https://unpkg.com/@ag-grid-enterprise/all-modules@23.2.0/dist/ag-grid-enterprise.min.js"></script> -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="/lighterhtml/min.js"></script>
     <script src="./main.js" type="module"></script>
@@ -13,28 +12,27 @@
 </head>
 
 <body>
-    <a id="hiddenDownload" style="display:none"></a>
-    <div id="hiddenUpload"></div>
+    <a id="hiddenDownload" class="hidden"></a>
+    <div id="hiddenUpload" class="hidden"></div>
     <div class="grid-container">
         <div class="header">
-            <div class="center" id="toolBtnGroup">
-            </div>
-            <div class="center" id="searchTxt">
-                <input type="text" class="filter" placeholder="Filter..." id="txtFilter" oninput="onFilterTextBoxChanged()" />
-            </div>
-            <div class="center text-right">
-                <span>🛳️ Ports Of Call</span>
-            </div>
-        </div>
-        <div class="main">
-            <div id="status"></div>
-            <div id="mainGrid" style="height: 100%; width:100%;" class="ag-theme-alpine"></div>
-        </div>
-        <div class="footer">
             <div class="center">
                 <div class="monitor" id="monitor_node"></div>
             </div>
-            <div class="center" id="copyright_node"></div>
+            <div id="copyright_node" class="center"></div>
+        </div>
+        <div class="main" style="padding: .2em;">
+            <div class="action-section" style="border: 1px solid #babfc7; border-bottom: none;">
+                <div class="action" id="toolBtnGroup">
+                </div>
+                <div class="filters">
+                    <div id="status"></div>
+                    <div id="searchTxt" style="display:flex;"></div>
+                </div>
+            </div>
+            <div style="border: 1px solid #babfc7; border-top: none;">
+                <div id="mainGrid" class="ag-theme-alpine"></div>
+            </div>
         </div>
     </div>
     <div id="mdlAdd" class="modal"></div>

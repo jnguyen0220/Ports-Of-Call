@@ -56,7 +56,7 @@ const clientConnect = ({ serverStartDate, schedule }) => {
                 Monitor since: ${serverStart.toLocaleString()}
             `,
         copyright_html = html `
-                <div class="text-right">Copyright © ${serverStart.getFullYear()} by <a href="mailto:jonny_nguyen@outlook.com">Jonny Nguyen</a></div>
+                <div style="text-align:right;">Ports Of Call © ${serverStart.getFullYear()} by <a href="mailto:jonny_nguyen@outlook.com">Jonny Nguyen</a></div>
             `;
 
     render(document.getElementById('copyright_node'), copyright_html);
@@ -77,14 +77,14 @@ const domControlInit = () => {
 
 const setupSearchText = (node) => {
     render(node, html `
-        <input type="text" class="filter" placeholder="Filter..." oninput="${onFilterTextBoxChanged}" />
+        <input type="text" style="border:none;flex:1 1 auto; padding: 0 .5em;" placeholder="Enter text here to filter the data" oninput="${onFilterTextBoxChanged}" />
     `);
 }
 
 const setupUpload = (node) => {
     const onClick = (event) => event.target.value = null;
-    render(node, html `
-        <input type="file" onchange=${upload} onclick=${onClick} style="display:none" />
+    render(node, html ` 
+        <input type="file" onchange=${ upload } onclick=${ onClick } />
     `);
 }
 
@@ -184,7 +184,9 @@ const pickProperties = (props, data) => {
 
 const download = () => {
     const data = getDownloadData(),
-        dataStr = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(data,null,2))}`,
+        dataStr = `
+            data:text/json;charset=utf-8,${ encodeURIComponent(JSON.stringify(data, null, 2)) }
+        `,
         element = document.getElementById('hiddenDownload');
 
     element.setAttribute("href", dataStr);

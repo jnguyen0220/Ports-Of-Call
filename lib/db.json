@@ -8,37 +8,33 @@
       "port": "80",
       "requestMethod": "",
       "headers": "",
-      "body": ""
+      "body": "",
+      "successWhen": "",
+      "successStatus": ""
     },
     {
       "protocol": "HTTPS",
       "scheduleInterval": "*/5 * * * * *",
       "timeout": 2500,
       "url": "google.com",
-      "port": 443,
+      "port": "443",
       "requestMethod": "GET",
       "headers": "",
-      "body": ""
+      "body": "",
+      "successWhen": "2",
+      "successStatus": "503"
     },
     {
       "protocol": "HTTP",
       "scheduleInterval": "*/5 * * * * *",
       "timeout": 2500,
       "url": "google.com",
-      "port": 80,
+      "port": "80",
       "requestMethod": "GET",
-      "headers": "{\"test\":\"jonny\"}",
-      "body": ""
-    },
-    {
-      "protocol": "TCP",
-      "scheduleInterval": "*/5 * * * * *",
-      "timeout": 2500,
-      "url": "8.8.8.8",
-      "port": "53",
-      "requestMethod": "",
       "headers": "",
-      "body": ""
+      "body": "",
+      "successWhen": "1",
+      "successStatus": "2**, 300"
     }
   ]
 }

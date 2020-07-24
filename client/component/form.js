@@ -8,13 +8,17 @@ config = {
         { value: '* * * * *', display: '60 Seconds' },
     ],
     protocolOptions: [
-        { value: 'TCP', display: 'TCP', port: null, isTCPDisabled: false },
-        { value: 'HTTP', display: 'HTTP', port: 80, isTCPDisabled: true },
-        { value: 'HTTPS', display: 'HTTPS', port: 443, isTCPDisabled: true },
+        { value: 'TCP', display: 'TCP', port: "", isTCPDisabled: false },
+        { value: 'HTTP', display: 'HTTP', port: "80", isTCPDisabled: true },
+        { value: 'HTTPS', display: 'HTTPS', port: "443", isTCPDisabled: true },
     ],
     requestMethodOptions: [
         { value: 'GET', display: 'GET' },
         { value: 'POST', display: 'POST' }
+    ],
+    successWhenOptions: [
+        { value: '1', display: 'Include' },
+        { value: '2', display: 'Exclude' }
     ],
     required: ['protocol', 'scheduleInterval', 'timeout', 'url', 'port']
 }
@@ -29,13 +33,14 @@ const defaultValues = () => ({
     port: '',
     scheduleInterval: '*/5 * * * * *',
     requestMethod: '',
+    successWhen: '',
+    successStatus: '',
     headers: '',
     body: ''
 });
 
 const onIntervalChange = (event) => {
-    const { options, selectedIndex } = event.target,
-        value = options[selectedIndex].value;
+    const value = getSelectedValue(event);
 
     state.data.scheduleInterval = value;
     _render(state);
@@ -43,13 +48,12 @@ const onIntervalChange = (event) => {
 
 const toggleCustom = (event) => {
     const { checked } = event.target;
-    state.appState.isCustomEnable = !checked;
+    state.appState.isCustomEnable = checked;
     _render(state);
 }
 
 const onProtocolChange = (event) => {
-    const { options, selectedIndex } = event.target,
-        value = options[selectedIndex].value;
+    const value = getSelectedValue(event);
 
     const found = config.protocolOptions.find(x => x.value === value);
     state.data = {
@@ -59,6 +63,8 @@ const onProtocolChange = (event) => {
         timeout: 2500,
         headers: '',
         body: '',
+        successWhen: value === 'TCP' ? '' : '1',
+        successStatus: value === 'TCP' ? '' : '200',
         requestMethod: value === 'TCP' ? '' : 'GET',
     };
     state.appState = {
@@ -81,9 +87,13 @@ const isFormValid = (column, data) => {
     return !column.every(x => data[x]);
 }
 
+const getSelectedValue = (event) => {
+    const { options, selectedIndex } = event.target;
+    return options[selectedIndex].value;
+}
+
 const onRequestMethodChange = (event) => {
-    const { options, selectedIndex } = event.target,
-        value = options[selectedIndex].value;
+    const value = getSelectedValue(event);
 
     state.data = {
         ...state.data,
@@ -104,6 +114,17 @@ const save = () => {
     const { mode, data, handlers } = state;
     handlers.save(mode, data);
     close();
+}
+
+const onSuccessWhenChange = (event) => {
+    const value = getSelectedValue(event);
+
+    state.data = {
+        ...state.data,
+        successWhen: value,
+        successStatus: ''
+    }
+    _render(state);
 }
 
 const appStateDefault = (data) => {
@@ -169,7 +190,7 @@ const _render = ({ node, mode, data, appState }) => {
                             <input type="checkbox" onchange=${toggleCustom} /> Custom
                         </div>
                         <div>
-                            <input type="text" required name="schedule_interval" disabled=${appState.isCustomEnable} value=${data.scheduleInterval} oninput=${onValueChange} autocomplete="off">
+                            <input type="text" required name="schedule_interval" disabled=${!appState.isCustomEnable} value=${data.scheduleInterval} oninput=${onValueChange} autocomplete="off">
                         </div>
                     </div>
                     <div>
@@ -201,27 +222,42 @@ const _render = ({ node, mode, data, appState }) => {
                             <label>Request Method <span class="requied">*</span></label>
                         </div>
                         <div>
-                            <select style="padding: 5px 0;" onchange=${onRequestMethodChange} value=${data.requestMethod}>
-                                ${ config.requestMethodOptions.map(x => html`<option value=${x.value}>${x.display}</option>`)}
+                            <select style="padding: 5px 0;" onchange=${onRequestMethodChange}>
+                                ${ config.requestMethodOptions.map(x => html`<option value=${x.value} selected=${x.value === data.requestMethod}>${x.display}</option>`)}
                             </select>
                         </div>
                         <div>
-                            <label>Headers</label>
+                            <label>Success when <span class="requied">*</span></label>
                         </div>
                         <div>
-                            <textarea rows="2" name="headers" oninput=${onValueChange} value=${data.headers}></textarea>
+                            <div style="display:grid; grid-template-columns: auto 1fr;">
+                                <div>
+                                    <select style="padding: 5px 0;" onchange=${onSuccessWhenChange}>
+                                        ${ config.successWhenOptions.map(x => html`<option value=${x.value} selected=${x.value === data.successWhen}>${x.display}</option>`)}
+                                    </select>
+                                </div>
+                                <div style="display:flex;">
+                                    <input type="text" name="successStatus" value=${data.successStatus} oninput=${onValueChange} />
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label>Headers (json syntax)</label>
+                        </div>
+                        <div>
+                            <textarea rows="3" name="headers" oninput=${onValueChange} value=${data.headers}></textarea>
                         </div>
                         <div style="display: ${appState.isBodyDisabled ? 'none' : 'block'}">
                             <div>
-                                <label>Body</label>
+                                <label>Body (json syntax)</label>
                             </div>
                             <div>
-                                <textarea rows="2" name="body" oninput=${onValueChange} value=${data.body}></textarea>
+                                <textarea rows="3" name="body" oninput=${onValueChange} value=${data.body}></textarea>
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <div class="btn-group right">
+                    <div style="display: flex; justify-content: flex-end;">
+                        <div class="btn-group">
                             <button onclick=${close} style="font-size: 16px;">&#10005; Cancel</button>
                             <button onclick=${save} disabled=${appState.isSaveDisabled} style="font-size: 16px;">&#10003; ${mode === 'clone' ? 'Clone': 'Save'}</button>
                         </div>
