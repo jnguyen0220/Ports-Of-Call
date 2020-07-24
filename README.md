@@ -2,7 +2,7 @@
 A real time heartbeat web application that uses cron syntax for scheduling.
 
 ## Demo
-71.147.4.114:3000
+[http://71.147.4.114:3000](http://71.147.4.114:3000)
 
 ## Prerequisites 
 ```
