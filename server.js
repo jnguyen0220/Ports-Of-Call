@@ -84,6 +84,7 @@ const requestCompleted = (id, result) => {
 
     if (found) {
         found['lastPingDate'] = lastPingDate;
+        found['lastStatusChange'] = found['lastStatusChange'] || lastPingDate;
         found['uptime'] = calculateUptime(id, result);
         found['status'] !== result && (found['lastStatusChange'] = lastPingDate);
         found['timeAgo'] = moment(found['lastStatusChange']).fromNow();

@@ -3,9 +3,9 @@ import { createCircle } from '../template.js';
 
 export const createStatusComponent = (node, filterGrid, { total, green, red, gray }) => {
         const config = [
-            { svg: createCircle('red'), color: red, status: 'Failed' },
-            { svg: createCircle('green'), color: green, status: 'Active' },
-            { svg: createCircle('gray'), color: gray, status: 'Suspened' }
+            { value: 1, svg: createCircle('red'), color: red, status: 'Failed' },
+            { value: 2, svg: createCircle('green'), color: green, status: 'Active' },
+            { value: 3, svg: createCircle('gray'), color: gray, status: 'Suspened' }
         ]
         render(node, html `
         <div style="display:flex;">
@@ -21,10 +21,10 @@ export const createStatusComponent = (node, filterGrid, { total, green, red, gra
                     <div style="padding: 0 .4em; display: flex; border-right:1px solid #babfc7;">
                         <div style="display:flex; align-items:center;">
                             <div>
-                                <input type="checkbox" style="vertical-align: middle;" onchange=${filterGrid} value="1" /> 
+                                <input type="checkbox" style="vertical-align: middle;" onchange=${filterGrid} value=${x.value} /> 
                             </div>
                             <div style="display: flex;">
-                                ${ x.svg }
+                                ${x.svg}
                             </div>
                             <div>
                                 ${x.status}: <b>${x.color}</b>
