@@ -51,7 +51,7 @@ const columnDefs = (onActionMenu) => ([{
             { headerName: "Available", field: "status", cellRenderer: availableIndicator, sortable: true, suppressMenu: true },
             { headerName: "Uptime", field: "uptime", suppressMenu: true, valueFormatter: (params) => params.value ? `${params.value} %` : '', cellRenderer: 'agAnimateShowChangeCellRenderer' },
             { headerName: "Last Ping Time", field: "lastPingDate", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocalTimeString },
-            { headerName: "Last Status Change", field: "lastStatusChange", cellRenderer: 'agAnimateShowChangeCellRenderer', valueFormatter: convertToLocaleString },
+            { headerName: "Last Status Change", field: "timeAgo" },
             { headerName: "Protocol", field: "protocol", valueFormatter: (params) => `${params.value} ` + `${ params.value !== 'TCP' ? `(${params.data.requestMethod})` : ''}` }, 
     {
         headerName: "Url",

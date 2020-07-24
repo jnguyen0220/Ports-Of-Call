@@ -1,6 +1,7 @@
 const express = require('express'),
     _ = require('lodash'),
-    app = express(),
+    moment = require('moment');
+app = express(),
     http = require('http').createServer(app),
     io = require('socket.io')(http),
     util = require('./lib/util.js'),
@@ -85,6 +86,7 @@ const requestCompleted = (id, result) => {
         found['lastPingDate'] = lastPingDate;
         found['uptime'] = calculateUptime(id, result);
         found['status'] !== result && (found['lastStatusChange'] = lastPingDate);
+        found['timeAgo'] = moment(found['lastStatusChange']).fromNow();
         found['status'] = result;
     }
     io.emit('update', found);
