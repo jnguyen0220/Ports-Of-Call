@@ -1,4 +1,4 @@
-import { createCircleString } from './template.js'
+import { createCircleString } from './template.js';
 const { html } = lighterhtml;
 
 const convertToLocalTimeString = (params) => {
@@ -15,15 +15,17 @@ const isFirstColumn = (params) => {
     return thisIsFirstColumn;
 }
 
-const btnRemoveRenderer = (onActionMenu) => (value) => {
-    const onClick = (mode) => () => {
-        onActionMenu(mode, value.data)
-    }
+const onClick = (mode, value, onActionMenu) => () => {
+    const { api, data } = value;
+    const node = api.getRowNode(data.id);
+    onActionMenu(mode, node.data);
+}
 
+const btnRemoveRenderer = (onActionMenu) => (value) => {
     return html.node `
         <div class="btn-group">
-            <button title="edit" onclick=${onClick('edit')}>Edit</button>
-            <button title="clone" onclick=${onClick('clone')}>Clone</button>
+            <button title="edit" onclick=${onClick('edit', value, onActionMenu)}>Edit</button>
+            <button title="clone" onclick=${onClick('clone', value, onActionMenu)}>Clone</button>
         </div>
     `;
 }
