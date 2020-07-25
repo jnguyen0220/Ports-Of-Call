@@ -126,6 +126,7 @@ const stopComplete = (data) => {
             success && io.emit('update', {...item, status: 3 });
             break;
     }
+    uptime.delete(id);
     scheduleManager.stopStatus.delete(id);
 }
 

@@ -167,7 +167,7 @@ const _render = ({ node, mode, data, appState }) => {
                     <div>
                         <div>
                             <input type="hidden" name="id" />
-                            <label>Request<span class="requied">*</span></label>
+                            <label>Request <span class="requied">*</span></label>
                         </div>
                         <div>
                             <select style="padding: 5px 0;" onchange=${onProtocolChange}>
@@ -221,15 +221,15 @@ const _render = ({ node, mode, data, appState }) => {
                         <div>
                             <label>Request Method <span class="requied">*</span></label>
                         </div>
-                        <div>
+                        <div style="padding: .2em 0;">
                             <select style="padding: 5px 0;" onchange=${onRequestMethodChange}>
                                 ${ config.requestMethodOptions.map(x => html`<option value=${x.value} selected=${x.value === data.requestMethod}>${x.display}</option>`)}
                             </select>
                         </div>
                         <div>
-                            <label>Success when <span class="requied">*</span></label>
+                            <label>Success when status code <span class="requied">*</span></label>
                         </div>
-                        <div>
+                        <div style="padding: .2em 0;">
                             <div style="display:grid; grid-template-columns: auto 1fr;">
                                 <div>
                                     <select style="padding: 5px 0;" onchange=${onSuccessWhenChange}>
