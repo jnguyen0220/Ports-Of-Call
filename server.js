@@ -143,7 +143,8 @@ app.get('/', (req, res) => {
 });
 
 const addDestination = (item) => {
-    const result = {...item, id: Date.now() },
+    const now = Date.now();
+    const result = {...item, id: now, timeAgo: moment(now).fromNow(), lastStatusChange: now },
         success = scheduleManager.add({ data: result, task: getAssignTask(result.protocol) });
 
     if (success) {

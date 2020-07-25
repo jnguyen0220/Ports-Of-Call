@@ -13,12 +13,12 @@ const update = (gridApi) => (msg) => {
 }
 
 const add = (gridApi) => (msg) => {
-    gridApi.applyTransaction({ add: msg });
+    gridApi.applyTransactionAsync({ add: msg });
 }
 
 const remove = (gridApi) => (msg) => {
     const rowNode = gridApi.getRowNode(msg);
-    gridApi.applyTransaction({ remove: [rowNode.data] });
+    gridApi.applyTransactionAsync({ remove: [rowNode.data] });
 }
 
 export const Message = (gridApi, clientConnect) => {
