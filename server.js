@@ -106,6 +106,7 @@ const stopComplete = (data) => {
         case "stop":
             const found = schedule.find(x => x.id === id);
             found.status = 3;
+            found.timeAgo = null;
             io.emit('update', found);
             break;
         case "remove":
@@ -115,15 +116,16 @@ const stopComplete = (data) => {
             io.emit('remove', id);
             break;
         case "update":
-            schedule = schedule.filter(x => x.id !== id).concat(item);
+            const _item = resetTimeAgo(item);
+            schedule = schedule.filter(x => x.id !== id).concat(_item);
             db.set('destination', cleanSaveObject(schedule)).write();
             stopList.delete(id);
             scheduleManager.jobs.delete(id);
             const success = scheduleManager.add({
-                data: item,
-                task: getAssignTask(item.protocol)
+                data: _item,
+                task: getAssignTask(_item.protocol)
             });
-            success && io.emit('update', {...item, status: 3 });
+            success && io.emit('update', {..._item, status: 3 });
             break;
     }
     uptime.delete(id);
@@ -144,13 +146,23 @@ app.get('/', (req, res) => {
 
 const addDestination = (item) => {
     const now = Date.now();
-    const result = {...item, id: now, timeAgo: moment(now).fromNow(), lastStatusChange: now },
+    const result = resetTimeAgo({...item, id: now }),
         success = scheduleManager.add({ data: result, task: getAssignTask(result.protocol) });
 
     if (success) {
         schedule = schedule.concat(result);
         db.set('destination', cleanSaveObject(schedule)).write();
         io.emit('add', [result]);
+    }
+}
+
+const resetTimeAgo = (item) => {
+    const now = Date.now();
+    return {
+        ...item,
+        lastStatusChange: now,
+        lastPingDate: now,
+        timeAgo: moment(now).fromNow()
     }
 }
 
