@@ -204,6 +204,8 @@ const getDownloadData = () => {
             "port",
             "requestMethod",
             "headers",
+            "successWhen",
+            "successStatus",
             "body"
         ];
 
