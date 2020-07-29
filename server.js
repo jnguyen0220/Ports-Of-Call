@@ -1,24 +1,26 @@
-const express = require('express'),
-    _ = require('lodash'),
-    moment = require('moment');
-app = express(),
-    http = require('http').createServer(app),
-    io = require('socket.io')(http),
-    util = require('./lib/util.js'),
-    ScheduleManager = require('./lib/scheduleManager'),
-    low = require('lowdb'),
-    FileSync = require('lowdb/adapters/FileSync'),
+import { cleanObject } from './client/common/shared.js';
+import express from 'express';
+import * as _ from 'lodash';
+import moment from 'moment';
+import { createServer } from 'http';
+import SocketIO from 'socket.io';
+import * as util from './lib/util.js';
+import { ScheduleManager } from './lib/scheduleManager.js'
+import low from 'lowdb';
+import FileSync from 'lowdb/adapters/FileSync.js';
+
+const app = express(),
+    http = createServer(app),
+    io = SocketIO(http),
     adapter = new FileSync('./lib/db.json'),
     db = low(adapter),
-    serverStartDate = new Date();
+    serverStartDate = new Date(),
+    stopList = new Set(),
+    uptime = new Map();
 
 db.defaults({ destination: [] }).write();
 
 let schedule = util.addId(db.get('destination').value());
-
-const config = {
-    required: ['protocol', 'scheduleInterval', 'timeout', 'url', 'port', 'requestMethod', 'headers', 'body', 'timeout', 'successWhen', 'successStatus']
-}
 
 const getAssignTask = (protocol) => {
     return protocol === 'TCP' ? pingTask : httpTask;
@@ -30,10 +32,6 @@ const assignTask = (data) => {
         task: getAssignTask(x.protocol)
     }));
 }
-
-const stopList = new Set();
-
-const uptime = new Map();
 
 const calculateUptime = (id, status) => {
     !uptime.has(id) && uptime.set(id, [0, 0]);
@@ -93,13 +91,6 @@ const requestCompleted = (id, result) => {
     io.emit('update', found);
 };
 
-const cleanSaveObject = (list) => {
-    return list.map(x => config.required.reduce((a, c) => ({
-        ...a,
-        [c]: x[c]
-    }), {}));
-}
-
 const stopComplete = (data) => {
     const { status, item, id } = scheduleManager.stopStatus.get(data.id);
     switch (status) {
@@ -111,14 +102,14 @@ const stopComplete = (data) => {
             break;
         case "remove":
             schedule = schedule.filter(x => x.id !== id);
-            db.set('destination', cleanSaveObject(schedule)).write();
+            db.set('destination', cleanObject(schedule)).write();
             scheduleManager.jobs.delete(id);
             io.emit('remove', id);
             break;
         case "update":
             const _item = resetTimeAgo(item);
             schedule = schedule.filter(x => x.id !== id).concat(_item);
-            db.set('destination', cleanSaveObject(schedule)).write();
+            db.set('destination', cleanObject(schedule)).write();
             stopList.delete(id);
             scheduleManager.jobs.delete(id);
             const success = scheduleManager.add({
@@ -135,7 +126,7 @@ const stopComplete = (data) => {
 const scheduleManager = new ScheduleManager(stopComplete);
 scheduleManager.load(assignTask(schedule));
 
-static_config = [
+[
     { client_path: "/", server_path: "./client" },
     { client_path: "/lighterhtml", server_path: "./node_modules/lighterhtml" }
 ].forEach(x => app.use(x.client_path, express.static(x.server_path)))
@@ -151,7 +142,7 @@ const addDestination = (item) => {
 
     if (success) {
         schedule = schedule.concat(result);
-        db.set('destination', cleanSaveObject(schedule)).write();
+        db.set('destination', cleanObject(schedule)).write();
         io.emit('add', [result]);
     }
 }
@@ -190,7 +181,7 @@ const importData = (data) => {
     const result = util.addId(data);
     schedule = schedule.concat(result);
     scheduleManager.load(assignTask(result));
-    db.set('destination', cleanSaveObject(schedule)).write();
+    db.set('destination', cleanObject(schedule)).write();
     io.emit('add', result);
 }
 

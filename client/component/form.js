@@ -137,12 +137,12 @@ const appStateDefault = (data) => {
     }
 }
 
-export const createFormComponent = ({ node, handlers, data = defaultValues(), mode = 'add' }) => {
+export const createFormComponent = ({ node, handlers, data, mode = 'add' }) => {
     state = {
         node,
         handlers,
         mode,
-        data,
+        data: Object.assign(defaultValues(), data || {}),
         appState: appStateDefault(data)
     };
     _render(state);
