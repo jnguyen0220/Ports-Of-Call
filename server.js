@@ -10,7 +10,9 @@ app = express(),
     FileSync = require('lowdb/adapters/FileSync'),
     adapter = new FileSync('./lib/db.json'),
     db = low(adapter),
-    serverStartDate = new Date();
+    serverStartDate = new Date(),
+    stopList = new Set(),
+    uptime = new Map();
 
 db.defaults({ destination: [] }).write();
 
@@ -30,10 +32,6 @@ const assignTask = (data) => {
         task: getAssignTask(x.protocol)
     }));
 }
-
-const stopList = new Set();
-
-const uptime = new Map();
 
 const calculateUptime = (id, status) => {
     !uptime.has(id) && uptime.set(id, [0, 0]);
