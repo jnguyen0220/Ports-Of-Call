@@ -187,7 +187,7 @@ const importData = (data) => {
     const result = util.addId(data);
     schedule = schedule.concat(result);
     scheduleManager.load(assignTask(result));
-    db.set('destination', cleanObject(schedule)).write();
+    db.set('destination', cleanSaveObject(schedule)).write();
     io.emit('add', result);
 }
 
