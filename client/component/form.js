@@ -138,12 +138,13 @@ const appStateDefault = (data) => {
 }
 
 export const createFormComponent = ({ node, handlers, data, mode = 'add' }) => {
+    const defaultValue = defaultValues()
     state = {
         node,
         handlers,
         mode,
-        data: Object.assign(defaultValues(), data || {}),
-        appState: appStateDefault(data)
+        data: Object.assign(defaultValue, data || {}),
+        appState: appStateDefault(data || defaultValue)
     };
     _render(state);
     node.style.display = 'flex';
