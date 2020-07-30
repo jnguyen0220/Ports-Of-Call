@@ -12,7 +12,10 @@ const express = require('express'),
     db = low(adapter),
     serverStartDate = new Date(),
     stopList = new Set(),
-    uptime = new Map();
+    uptime = new Map(),
+    config = {
+        required: ['protocol', 'scheduleInterval', 'timeout', 'url', 'port', 'requestMethod', 'headers', 'body', 'timeout', 'successWhen', 'successStatus']
+    };
 
 db.defaults({ destination: [] }).write();
 
