@@ -16,8 +16,6 @@ const express = require('express'),
 
 db.defaults({ destination: [] }).write();
 
-const cleanObject = () => {};
-
 let schedule = util.addId(db.get('destination').value());
 
 const getAssignTask = (protocol) => {
@@ -89,6 +87,13 @@ const requestCompleted = (id, result) => {
     io.emit('update', found);
 };
 
+const cleanSaveObject = (list) => {
+    return list.map(x => config.required.reduce((a, c) => ({
+        ...a,
+        [c]: x[c]
+    }), {}));
+}
+
 const stopComplete = (data) => {
     const { status, item, id } = scheduleManager.stopStatus.get(data.id);
     switch (status) {
@@ -100,14 +105,14 @@ const stopComplete = (data) => {
             break;
         case "remove":
             schedule = schedule.filter(x => x.id !== id);
-            db.set('destination', cleanObject(schedule)).write();
+            db.set('destination', cleanSaveObject(schedule)).write();
             scheduleManager.jobs.delete(id);
             io.emit('remove', id);
             break;
         case "update":
             const _item = resetTimeAgo(item);
             schedule = schedule.filter(x => x.id !== id).concat(_item);
-            db.set('destination', cleanObject(schedule)).write();
+            db.set('destination', cleanSaveObject(schedule)).write();
             stopList.delete(id);
             scheduleManager.jobs.delete(id);
             const success = scheduleManager.add({
@@ -140,7 +145,7 @@ const addDestination = (item) => {
 
     if (success) {
         schedule = schedule.concat(result);
-        db.set('destination', cleanObject(schedule)).write();
+        db.set('destination', cleanSaveObject(schedule)).write();
         io.emit('add', [result]);
     }
 }
