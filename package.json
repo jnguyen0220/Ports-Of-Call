@@ -6,7 +6,6 @@
     "scripts": {
         "start": "node server.js"
     },
-    "type": "module",
     "repository": {
         "type": "git",
         "url": "https://github.com/jnguyen0220/Ports-Of-Call"

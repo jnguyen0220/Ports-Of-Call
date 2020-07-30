@@ -4,21 +4,10 @@ import { createStatusComponent } from './component/status.js';
 import { gridOptions } from './grid.js';
 import { deleteFormComponent } from './component/confirm.js';
 import { Message, Send } from './message.js';
-import { cleanObject } from './common/shared.js';
 const { html, render } = lighterhtml;
 const socket = io();
-let externalFilter = [];
 
-const readFileAsync = (file) => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            resolve(JSON.parse(reader.result));
-        };
-        reader.onerror = reject;
-        reader.readAsText(file);
-    })
-}
+let externalFilter = [];
 
 const onRowSelected = (event) => {
     const selectedRows = grid.api.getSelectedRows();
@@ -175,6 +164,24 @@ const upload = async(evt) => {
     }
 }
 
+const readFileAsync = (file) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            resolve(JSON.parse(reader.result));
+        };
+        reader.onerror = reject;
+        reader.readAsText(file);
+    })
+}
+
+const pickProperties = (props, data) => {
+    return props.reduce((a, c) => ({
+        ...a,
+        [c]: data[c]
+    }), {});
+}
+
 const download = () => {
     const data = getDownloadData(),
         dataStr = `
@@ -188,9 +195,22 @@ const download = () => {
 }
 
 const getDownloadData = () => {
-    const data = [];
+    const data = [],
+        props = [
+            "protocol",
+            "scheduleInterval",
+            "timeout",
+            "url",
+            "port",
+            "requestMethod",
+            "headers",
+            "successWhen",
+            "successStatus",
+            "body"
+        ];
+
     grid.api.forEachNodeAfterFilterAndSort(x => data.push(x.data));
-    return data.map(x => cleanObject(x));
+    return data.map(x => pickProperties(props, x));
 }
 
 const remove = async() => {

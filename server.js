@@ -1,17 +1,13 @@
-import { cleanObject } from './client/common/shared.js';
-import express from 'express';
-import * as _ from 'lodash';
-import moment from 'moment';
-import { createServer } from 'http';
-import SocketIO from 'socket.io';
-import * as util from './lib/util.js';
-import { ScheduleManager } from './lib/scheduleManager.js'
-import low from 'lowdb';
-import FileSync from 'lowdb/adapters/FileSync.js';
-
-const app = express(),
-    http = createServer(app),
-    io = SocketIO(http),
+const express = require('express'),
+    _ = require('lodash'),
+    moment = require('moment'),
+    app = express(),
+    http = require('http').createServer(app),
+    io = require('socket.io')(http),
+    util = require('./lib/util.js'),
+    ScheduleManager = require('./lib/scheduleManager'),
+    low = require('lowdb'),
+    FileSync = require('lowdb/adapters/FileSync'),
     adapter = new FileSync('./lib/db.json'),
     db = low(adapter),
     serverStartDate = new Date(),
@@ -19,6 +15,8 @@ const app = express(),
     uptime = new Map();
 
 db.defaults({ destination: [] }).write();
+
+const cleanObject = () => {};
 
 let schedule = util.addId(db.get('destination').value());
 
