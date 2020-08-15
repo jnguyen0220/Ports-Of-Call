@@ -2,11 +2,7 @@ import { createCircleString } from './template.js';
 const { html } = lighterhtml;
 
 const convertToLocalTimeString = (params) => {
-    return new Date(params.value).toLocaleTimeString();
-}
-
-const convertToLocaleString = (params) => {
-    return new Date(params.value).toLocaleString();
+    return params.value && new Date(params.value).toLocaleTimeString();
 }
 
 const isFirstColumn = (params) => {

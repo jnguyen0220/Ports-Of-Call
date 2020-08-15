@@ -3,9 +3,8 @@ import { createToolBtnGroupComponent } from './component/toolBtnGroup.js';
 import { createStatusComponent } from './component/status.js';
 import { gridOptions } from './grid.js';
 import { deleteFormComponent } from './component/confirm.js';
-import { Message, Send } from './message.js';
+import { Message, Send, Socket } from './message.js';
 const { html, render } = lighterhtml;
-const socket = io();
 
 let externalFilter = [];
 
@@ -158,7 +157,7 @@ const upload = async(evt) => {
     const element = domElement.get('IMPORT').querySelector('input');
     try {
         const data = await readFileAsync(element.files[0]);
-        socket.emit('import', data);
+        Socket.emit('import', data);
     } catch (e) {
         console.log(e);
     }

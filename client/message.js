@@ -33,3 +33,5 @@ export const Message = (gridApi, clientConnect) => {
 export const Send = (topic, message) => {
     socket.emit(topic, message);
 }
+
+export const Socket = socket;

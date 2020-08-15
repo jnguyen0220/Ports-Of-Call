@@ -11,10 +11,9 @@ const express = require('express'),
     adapter = new FileSync('./lib/db.json'),
     db = low(adapter),
     serverStartDate = new Date(),
-    stopList = new Set(),
     uptime = new Map(),
     config = {
-        required: ['protocol', 'scheduleInterval', 'timeout', 'url', 'port', 'requestMethod', 'headers', 'body', 'timeout', 'successWhen', 'successStatus']
+        required: ['protocol', 'scheduleInterval', 'timeout', 'url', 'port', 'requestMethod', 'headers', 'body', 'timeout', 'successWhen', 'successStatus', 'enabled']
     };
 
 db.defaults({ destination: [] }).write();
@@ -102,29 +101,30 @@ const stopComplete = (data) => {
     switch (status) {
         case "stop":
             const found = schedule.find(x => x.id === id);
+            found.enabled = false;
             found.status = 3;
             found.timeAgo = null;
+            found.lastPingDate = null;
             io.emit('update', found);
             break;
         case "remove":
             schedule = schedule.filter(x => x.id !== id);
-            db.set('destination', cleanSaveObject(schedule)).write();
             scheduleManager.jobs.delete(id);
             io.emit('remove', id);
             break;
         case "update":
             const _item = resetTimeAgo(item);
             schedule = schedule.filter(x => x.id !== id).concat(_item);
-            db.set('destination', cleanSaveObject(schedule)).write();
-            stopList.delete(id);
             scheduleManager.jobs.delete(id);
             const success = scheduleManager.add({
                 data: _item,
-                task: getAssignTask(_item.protocol)
+                task: getAssignTask(_item.protocol),
+                enabled: true
             });
             success && io.emit('update', {..._item, status: 3 });
             break;
     }
+    db.set('destination', cleanSaveObject(schedule)).write();
     uptime.delete(id);
     scheduleManager.stopStatus.delete(id);
 }
@@ -143,7 +143,7 @@ app.get('/', (req, res) => {
 
 const addDestination = (item) => {
     const now = Date.now();
-    const result = resetTimeAgo({...item, id: now }),
+    const result = resetTimeAgo({...item, id: now, enabled: true }),
         success = scheduleManager.add({ data: result, task: getAssignTask(result.protocol) });
 
     if (success) {
@@ -165,14 +165,11 @@ const resetTimeAgo = (item) => {
 
 const toggleTimer = (ids) => {
     ids.forEach(x => {
-        if (stopList.has(x)) {
-            scheduleManager.start(x);
-            stopList.delete(x);
-        } else {
-            scheduleManager.stop(x);
-            stopList.add(x);
-        }
+        const found = schedule.find(y => y.id = x);
+        found.enabled = !found.enabled;
+        found.enabled ? scheduleManager.start(x) : scheduleManager.stop(x);
     });
+    db.set('destination', cleanSaveObject(schedule)).write();
 }
 
 const updateDestination = ({ id, ...rest }) => {

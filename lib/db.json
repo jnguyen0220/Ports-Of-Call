@@ -10,7 +10,8 @@
       "headers": "",
       "body": "",
       "successWhen": "",
-      "successStatus": ""
+      "successStatus": "",
+      "enabled": true
     },
     {
       "protocol": "HTTPS",
@@ -22,7 +23,8 @@
       "headers": "",
       "body": "",
       "successWhen": "2",
-      "successStatus": "503"
+      "successStatus": "503",
+      "enabled": true
     },
     {
       "protocol": "HTTP",
@@ -34,7 +36,21 @@
       "headers": "",
       "body": "",
       "successWhen": "1",
-      "successStatus": "2**, 300"
+      "successStatus": "2** , 300",
+      "enabled": true
+    },
+    {
+      "protocol": "HTTP",
+      "scheduleInterval": "*/5 * * * * *",
+      "timeout": 2500,
+      "url": "postman-echo.com/basic-auth",
+      "port": "80",
+      "requestMethod": "GET",
+      "headers": "{\n\"Authorization\": \"Basic cG9zdG1hbjpwYXNzd29yZA==\"\n}",
+      "body": "",
+      "successWhen": "1",
+      "successStatus": "200",
+      "enabled": true
     }
   ]
 }
