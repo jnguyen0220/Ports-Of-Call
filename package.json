@@ -13,7 +13,7 @@
     "author": "Jonny Nguyen",
     "license": "ISC",
     "dependencies": {
-        "axios": "^0.19.2",
+        "axios": "^0.21.1",
         "cron": "^1.8.2",
         "express": "^4.17.1",
         "lighterhtml": "^4.0.2",
